@@ -11,29 +11,35 @@ import {
   Calendar,
   ArrowRight,
   LogOut,
-  Loader2
+  Loader2,
+  ShoppingBag // 1. Added ShoppingBag icon
 } from "lucide-react";
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const [stats, setStats] = useState({ talentCount: 0, chatCount: 0, eventCount: 0 });
+  // 2. Added storeCount to state
+  const [stats, setStats] = useState({ talentCount: 0, chatCount: 0, eventCount: 0, storeCount: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function getStats() {
-      // 1. Fetch Talent Count
+      // Fetch Talent Count
       const { count: talent } = await supabase.from("discovery").select("*", { count: 'exact', head: true });
 
-      // 2. Fetch Chat Count
+      // Fetch Chat Count
       const { count: chats } = await supabase.from("conversations").select("*", { count: 'exact', head: true });
 
-      // 3. Fetch Events Count (Assuming you have an 'events' table)
+      // Fetch Events Count
       const { count: events } = await supabase.from("events").select("*", { count: 'exact', head: true });
+
+      // 3. Fetch Store Product Count
+      const { count: products } = await supabase.from("products").select("*", { count: 'exact', head: true });
 
       setStats({
         talentCount: talent || 0,
         chatCount: chats || 0,
-        eventCount: events || 0
+        eventCount: events || 0,
+        storeCount: products || 0 // Added this
       });
       setLoading(false);
     }
@@ -61,9 +67,18 @@ export default function AdminDashboard() {
       title: "Events",
       desc: "Scheduled bookings & dates",
       icon: Calendar,
-      href: "/admin/events", // Redirects to your events tab
+      href: "/admin/events",
       color: "bg-amber-500",
       count: stats.eventCount
+    },
+    // 4. Added the Store Item here
+    {
+      title: "Store",
+      desc: "Manage shop inventory",
+      icon: ShoppingBag,
+      href: "/admin/store",
+      color: "bg-emerald-600",
+      count: stats.storeCount
     }
   ];
 
@@ -81,15 +96,15 @@ export default function AdminDashboard() {
           <div className="flex items-center gap-2 text-red-600 mb-2 font-black uppercase text-[10px] tracking-widest">
             <ShieldCheck size={16} /> Admin Command
           </div>
-          <h1 className="text-4xl font-black italic uppercase italic tracking-tighter">Command Center</h1>
+          <h1 className="text-4xl font-black italic uppercase tracking-tighter">Command Center</h1>
         </div>
         <button onClick={() => { supabase.auth.signOut(); router.push('/home'); }} className="p-3 bg-zinc-900 rounded-xl hover:bg-red-600 transition">
           <LogOut size={20} />
         </button>
       </div>
 
-      {/* GRID OPTIONS */}
-      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* GRID OPTIONS - Changed grid-cols-3 to grid-cols-2 lg:grid-cols-4 to fit the 4th item better */}
+      <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {menuItems.map((item) => (
           <div 
             key={item.title}
