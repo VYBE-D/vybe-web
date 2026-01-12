@@ -3,9 +3,11 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/supabase";
 import HomeGrid from "../../../component/HomeGrid";
-import { Lock, ShieldCheck, Globe, Loader2 } from "lucide-react";
+import { Lock, ShieldCheck, Globe, Loader2, Crown } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<"public" | "backroom">("public");
   const [publicGirls, setPublicGirls] = useState<any[]>([]);
   const [backroomGirls, setBackroomGirls] = useState<any[]>([]);
@@ -15,23 +17,30 @@ export default function HomePage() {
   useEffect(() => {
     async function fetchData() {
       try {
+        // 1. Get User and verify Tier from the 'tier' column
         const { data: { user } } = await supabase.auth.getUser();
+        
         if (user) {
           const { data: profile } = await supabase
             .from("profiles")
-            .select("subscription_tier")
+            .select("tier") // Updated to match your new column name
             .eq("id", user.id)
             .single();
           
-          if (profile?.subscription_tier === "Highest") setIsVip(true);
+          // Logic: Both VYBE and Admin gain Backroom access
+          if (profile?.tier === "VYBE" || profile?.tier === "Admin") {
+            setIsVip(true);
+          }
         }
 
+        // 2. Fetch all personnel
         const { data, error } = await supabase
           .from("discovery")
           .select("*")
           .order("created_at", { ascending: false });
 
         if (error) throw error;
+        
         if (data) {
           setPublicGirls(data.filter(g => !g.is_backroom));
           setBackroomGirls(data.filter(g => g.is_backroom));
@@ -39,6 +48,7 @@ export default function HomePage() {
       } catch (err) {
         console.error("Fetch Error:", err);
       } finally {
+        // Keeps the sleek scanning animation for 1.8s
         setTimeout(() => setLoading(false), 1800); 
       }
     }
@@ -48,14 +58,9 @@ export default function HomePage() {
   if (loading)
     return (
       <div className="bg-black min-h-screen flex items-center justify-center">
-        {/* WRAPPER TO STACK SCANNER AND TEXT */}
         <div className="flex flex-col items-center">
-          
-          {/* COMPACT SCANNER */}
           <div className="relative w-16 h-16 flex items-center justify-center">
             <div className="absolute inset-0 border border-zinc-800 rounded-2xl"></div>
-            
-            {/* Scanning Beam */}
             <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-red-600/20 to-transparent animate-scan-y"></div>
             
             <svg viewBox="0 0 24 24" fill="none" className="w-8 h-8 text-red-600 drop-shadow-[0_0_8px_rgba(220,38,38,0.8)]">
@@ -64,9 +69,8 @@ export default function HomePage() {
             </svg>
           </div>
 
-          {/* TEXT DIRECTLY UNDER SCANNER */}
           <p className="mt-4 text-[8px] font-black uppercase tracking-[0.5em] text-red-600 animate-pulse">
-            Vybing...
+                 Vybing...
           </p>
         </div>
 
@@ -82,9 +86,10 @@ export default function HomePage() {
     );
 
   return (
-    <main className="bg-black min-h-screen text-white p-4 pb-24">
-      <header className="py-6 text-center">
+    <main className="bg-black min-h-screen text-white p-4 pb-32">
+      <header className="py-6 flex justify-between items-center max-w-[320px] mx-auto">
         <h1 className="text-2xl font-black italic uppercase tracking-tighter">VYBE</h1>
+        {isVip && <Crown size={18} className="text-red-600 animate-pulse" />}
       </header>
 
       {/* TABS */}
@@ -92,14 +97,18 @@ export default function HomePage() {
         <div className="bg-zinc-900/80 p-1 rounded-2xl flex gap-1 border border-white/5 w-full max-w-[320px]">
           <button 
             onClick={() => setActiveTab("public")}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === "public" ? "bg-white text-black" : "text-zinc-500"}`}
+            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
+                activeTab === "public" ? "bg-white text-black shadow-lg" : "text-zinc-500"
+            }`}
           >
             <Globe size={12} />
             Public
           </button>
           <button 
             onClick={() => setActiveTab("backroom")}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === "backroom" ? "bg-red-600 text-white shadow-[0_0_10px_rgba(220,38,38,0.4)]" : "text-zinc-500"}`}
+            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
+                activeTab === "backroom" ? "bg-red-600 text-white shadow-[0_0_15px_rgba(220,38,38,0.4)]" : "text-zinc-500"
+            }`}
           >
             {isVip ? <ShieldCheck size={12} /> : <Lock size={12} />}
             Backroom
@@ -107,11 +116,12 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div className="transition-all duration-500">
+      {/* CONTENT AREA */}
+      <div className="max-w-md mx-auto">
         {activeTab === "public" ? (
           <section>
             {publicGirls.length === 0 ? (
-              <div className="text-center py-20 opacity-20 text-[9px] uppercase tracking-widest">Feed Offline</div>
+              <div className="text-center py-20 opacity-20 text-[9px] uppercase tracking-[0.4em]">Signal Lost...</div>
             ) : (
               <HomeGrid girls={publicGirls} />
             )}
@@ -120,25 +130,26 @@ export default function HomePage() {
           <section>
             {isVip ? (
               backroomGirls.length === 0 ? (
-                <div className="text-center py-20 opacity-20 text-[9px] uppercase tracking-widest">Backroom Empty</div>
+                <div className="text-center py-20 opacity-20 text-[9px] uppercase tracking-[0.4em]">Backroom Secure</div>
               ) : (
                 <HomeGrid girls={backroomGirls} />
               )
             ) : (
-              <div className="mt-4 flex flex-col items-center justify-center text-center p-8 border border-white/5 bg-zinc-900/20 rounded-[3rem]">
-                <div className="w-14 h-14 rounded-full bg-zinc-900 border border-red-600/30 flex items-center justify-center mb-6">
-                  <Lock size={20} className="text-red-600" />
+              /* ACCESS DENIED VIEW */
+              <div className="mt-4 flex flex-col items-center justify-center text-center p-10 border border-white/5 bg-zinc-900/20 rounded-[3.5rem] backdrop-blur-sm">
+                <div className="w-16 h-16 rounded-full bg-zinc-900 border border-red-600/30 flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(220,38,38,0.1)]">
+                  <Lock size={24} className="text-red-600" />
                 </div>
-                <h3 className="text-lg font-black uppercase italic tracking-tighter mb-2">Access Denied</h3>
+                <h3 className="text-xl font-black uppercase italic tracking-tighter mb-2">Access Restricted</h3>
                 <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.2em] leading-relaxed mb-8">
-                  This sector is reserved for <br/> 
-                  <span className="text-white">Highest Tier Subscribers</span>
+                  This archive requires <br/> 
+                  <span className="text-red-600">VYBE Authority</span>
                 </p>
                 <button 
-                  onClick={() => window.location.href = '/membership/upgrade'}
-                  className="bg-white text-black text-[9px] font-black uppercase px-10 py-4 rounded-full tracking-[0.2em] active:scale-95 transition-transform"
+                  onClick={() => router.push('/membership/upgrade')}
+                  className="bg-white text-black text-[9px] font-black uppercase px-10 py-5 rounded-full tracking-[0.3em] active:scale-95 transition-all hover:bg-red-600 hover:text-white"
                 >
-                  Upgrade Authority
+                  Elevate Clearance
                 </button>
               </div>
             )}

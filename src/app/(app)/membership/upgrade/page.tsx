@@ -10,9 +10,8 @@ import {
   Flame, 
   Crown, 
   Check, 
-  CreditCard, 
-  Bitcoin, 
-  X, 
+  Loader2,
+  X,
   ArrowRight,
   ShieldAlert
 } from "lucide-react";
@@ -22,7 +21,6 @@ const TIERS = [
     id: "guest",
     name: "Guest",
     price: "FREE",
-    description: "Basic entry into the Vybe Network archives.",
     features: [
       "Access Public Discovery",
       "Standard Signal Scan",
@@ -31,13 +29,11 @@ const TIERS = [
     ],
     button: "Current Tier",
     active: true,
-    color: "zinc-500"
   },
   {
     id: "prime",
     name: "Prime",
-    price: "$19",
-    description: "Enhanced operational capacity for active handlers.",
+    price: "From $5.99",
     features: [
       "Unlimited Personnel Requests",
       "Exclusive Event Intel",
@@ -45,16 +41,18 @@ const TIERS = [
       "Advanced Personnel Filtering",
       "Stealth Browsing Protocol"
     ],
-    button: "Upgrade Signal",
+    options: [
+      { id: "prime_monthly", label: "Monthly Protocol", price: "$5.99", period: "/ month" },
+      { id: "prime_yearly", label: "Annual Protocol", price: "$59.99", period: "/ year" },
+    ],
+    button: "Select Protocol",
     active: false,
     hot: true,
-    color: "red-600"
   },
   {
     id: "vybe",
     name: "VYBE",
-    price: "$49",
-    description: "Maximum clearance. Full access to the Backroom archives.",
+    price: "From $169.99",
     features: [
       "Everything in Prime",
       "The Backroom Access",
@@ -62,44 +60,53 @@ const TIERS = [
       "Verified Handler Status",
       "Priority Talent Deployment"
     ],
-    button: "Full Authority",
+    options: [
+      { id: "vybe_yearly", label: "Annual Clearance", price: "$169.99", period: "/ year" },
+      { id: "vybe_shadow", label: "Shadow (Lifetime)", price: "$299", period: "/ total", demand: true },
+    ],
+    button: "Gain Authority",
     active: false,
-    color: "white"
   }
 ];
 
 export default function MembershipPage() {
   const router = useRouter();
-  const [selectedTier, setSelectedTier] = useState<typeof TIERS[0] | null>(null);
+  const [selectedMainTier, setSelectedMainTier] = useState<any | null>(null);
+  const [loadingId, setLoadingId] = useState<string | null>(null);
 
-  const handlePaymentRedirect = (method: 'crypto' | 'stripe') => {
-    // Replace these URLs with your actual Stripe Payment Links or Crypto Gateway links
-    const paymentLinks: any = {
-      prime: {
-        stripe: "https://buy.stripe.com/your_prime_link",
-        crypto: "https://nowpayments.io/payment?id=your_prime_id"
-      },
-      vybe: {
-        stripe: "https://buy.stripe.com/your_vybe_link",
-        crypto: "https://nowpayments.io/payment?id=your_vybe_id"
+  const handleFinalPayment = async (optionId: string, amount: string) => {
+    setLoadingId(optionId);
+    try {
+      const response = await fetch("/api/payments/nowpayments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          amount: amount.replace('$', ''), 
+          tierId: optionId 
+        }),
+      });
+      const data = await response.json();
+      if (data.invoice_url) {
+        window.location.href = data.invoice_url;
+      } else {
+        console.error("Gateway Error:", data.error);
       }
-    };
-
-    if (selectedTier) {
-      const targetUrl = paymentLinks[selectedTier.id][method];
-      window.location.href = targetUrl;
+    } catch (error) {
+      console.error("Connection Error:", error);
+    } finally {
+      setLoadingId(null);
     }
   };
 
   return (
-    <main className="min-h-screen bg-[#050505] text-white p-6 pb-24 font-sans selection:bg-red-600/30">
+    <main className="min-h-screen bg-black text-white p-6 pb-40 font-sans selection:bg-red-600/30">
       
       {/* HEADER */}
-      <div className="flex items-center justify-between mb-10">
+      <div className="flex items-center justify-between mb-10 max-w-md mx-auto">
         <button onClick={() => router.back()} className="p-3 bg-zinc-900/50 rounded-2xl border border-white/5 hover:border-red-600/50 transition-all group">
           <ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
         </button>
-        <div className="flex flex-col items-center text-center">
+        <div className="flex flex-col items-center">
             <h1 className="text-[10px] font-black italic uppercase tracking-[0.4em] text-red-600">Clearance</h1>
             <p className="text-[8px] text-zinc-600 font-bold uppercase tracking-[0.2em]">Network Authority</p>
         </div>
@@ -117,19 +124,14 @@ export default function MembershipPage() {
       </div>
 
       {/* TIERS LIST */}
-      <div className="space-y-6 max-w-md mx-auto">
-        {TIERS.map((tier, index) => (
-          <motion.div
-            key={tier.name}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className={`relative p-8 rounded-[3rem] border-2 transition-all duration-500 ${
+      <div className="flex flex-col gap-8 max-w-md mx-auto">
+        {TIERS.map((tier) => (
+          <div
+            key={tier.id}
+            className={`relative flex flex-col p-8 rounded-[3.5rem] border-2 transition-all duration-500 ${
               tier.hot 
                 ? 'bg-zinc-900/40 border-red-600 shadow-[0_0_40px_rgba(220,38,38,0.1)]' 
-                : tier.name === "VYBE"
-                  ? 'bg-gradient-to-br from-zinc-900 to-black border-white/20'
-                  : 'bg-zinc-900/20 border-white/5'
+                : 'bg-zinc-900/20 border-white/5'
             }`}
           >
             {tier.hot && (
@@ -138,110 +140,112 @@ export default function MembershipPage() {
               </div>
             )}
 
-            <div className="flex justify-between items-start mb-4">
+            <div className="flex justify-between items-start mb-2">
               <div>
                 <h3 className={`text-3xl font-black italic uppercase tracking-tighter ${tier.hot ? 'text-red-600' : 'text-white'}`}>
                   {tier.name}
                 </h3>
-                <div className="flex items-baseline gap-1 mt-1">
-                  <span className="text-2xl font-black italic">{tier.price}</span>
-                  {tier.price !== "FREE" && <span className="text-[8px] text-zinc-600 font-bold">/PERIOD</span>}
-                </div>
+                <span className="text-xl font-black italic text-zinc-500">{tier.price}</span>
               </div>
               <div className={`p-4 rounded-3xl bg-black/50 border border-white/5 ${tier.hot ? 'text-red-600' : 'text-zinc-700'}`}>
-                {tier.name === "Guest" && <Zap size={22} />}
-                {tier.name === "Prime" && <Flame size={22} />}
-                {tier.name === "VYBE" && <Crown size={22} />}
+                {tier.id === "guest" && <Zap size={22} />}
+                {tier.id === "prime" && <Flame size={22} />}
+                {tier.id === "vybe" && <Crown size={22} />}
               </div>
             </div>
 
-            <ul className="space-y-4 mb-10 mt-6">
+            {/* FEATURES LIST */}
+            <div className="flex flex-col gap-4 mb-10 mt-6">
               {tier.features.map((feat) => (
-                <li key={feat} className="flex items-center gap-4">
-                  <Check size={12} className={tier.hot ? 'text-red-600' : 'text-zinc-500'} />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-300">{feat}</span>
-                </li>
+                <div key={feat} className="flex items-start gap-4">
+                  <Check size={14} className={`mt-0.5 shrink-0 ${tier.hot ? 'text-red-600' : 'text-zinc-500'}`} />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-300 leading-tight">
+                    {feat}
+                  </span>
+                </div>
               ))}
-            </ul>
+            </div>
 
             <button 
-              onClick={() => !tier.active && setSelectedTier(tier)}
+              onClick={() => !tier.active && setSelectedMainTier(tier)}
               disabled={tier.active}
               className={`w-full py-5 rounded-[2rem] font-black italic uppercase tracking-[0.3em] text-[10px] transition-all active:scale-95 ${
                 tier.active 
                   ? 'bg-zinc-800/50 text-zinc-600 border border-white/5 cursor-default' 
-                  : tier.hot
-                    ? 'bg-red-600 text-white shadow-lg'
-                    : 'bg-white text-black hover:bg-red-600 hover:text-white'
+                  : 'bg-white text-black hover:bg-red-600 hover:text-white'
               }`}
             >
               {tier.button}
             </button>
-          </motion.div>
+          </div>
         ))}
       </div>
 
-      {/* PAYMENT MODAL */}
+      {/* PROTOCOL SELECTION DRAWER */}
       <AnimatePresence>
-        {selectedTier && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
+        {selectedMainTier && (
+          <div className="fixed inset-0 z-[100] flex items-end justify-center">
             <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              exit={{ opacity: 0 }}
-              onClick={() => setSelectedTier(null)}
-              className="absolute inset-0 bg-black/90 backdrop-blur-md"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setSelectedMainTier(null)}
+              className="absolute inset-0 bg-black/95 backdrop-blur-md"
             />
-            
             <motion.div 
-              initial={{ y: "100%" }} 
-              animate={{ y: 0 }} 
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="relative w-full max-w-sm bg-zinc-900 border border-white/10 rounded-[3.5rem] p-8 shadow-2xl overflow-hidden"
+              initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              className="relative w-full max-w-md bg-zinc-900 border-t border-white/10 rounded-t-[3.5rem] p-8 pb-16 shadow-2xl"
             >
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-600 to-transparent opacity-50" />
-              
-              <button onClick={() => setSelectedTier(null)} className="absolute top-6 right-8 text-zinc-500 hover:text-white">
-                <X size={20} />
+              <div className="w-12 h-1 bg-zinc-800 rounded-full mx-auto mb-8" />
+              <button onClick={() => setSelectedMainTier(null)} className="absolute top-8 right-8 text-zinc-500 hover:text-white">
+                <X size={20}/>
               </button>
 
-              <div className="text-center mb-8">
-                <ShieldAlert size={32} className="mx-auto text-red-600 mb-4 animate-pulse" />
-                <h3 className="text-xl font-black italic uppercase tracking-tighter text-white">Select Protocol</h3>
-                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-2">
-                  Level: {selectedTier.name} • {selectedTier.price}
-                </p>
+              <div className="mb-8 text-center px-4">
+                 <ShieldAlert size={24} className="text-red-600 mx-auto mb-3 animate-pulse" />
+                 <h3 className="text-xl font-black italic uppercase tracking-tighter text-white">
+                   {selectedMainTier.name} Protocol Clearance
+                 </h3>
+                 <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mt-2">Select operational timeframe</p>
               </div>
 
               <div className="space-y-4">
-                {/* STRIPE / CARD */}
-                <button 
-                  onClick={() => handlePaymentRedirect('stripe')}
-                  className="w-full bg-white text-black py-5 rounded-2xl flex items-center justify-between px-6 hover:scale-[1.02] transition-all group"
-                >
-                  <div className="flex items-center gap-4">
-                    <CreditCard size={20} />
-                    <span className="text-[10px] font-black uppercase tracking-widest">Card / PayPal</span>
-                  </div>
-                  <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                </button>
-
-                {/* CRYPTO */}
-                <button 
-                  onClick={() => handlePaymentRedirect('crypto')}
-                  className="w-full bg-zinc-800 text-white py-5 rounded-2xl flex items-center justify-between px-6 border border-white/5 hover:border-orange-500/50 hover:scale-[1.02] transition-all group"
-                >
-                  <div className="flex items-center gap-4">
-                    <Bitcoin size={20} className="text-orange-500" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">Crypto Gateway</span>
-                  </div>
-                  <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                </button>
+                {selectedMainTier.options?.map((opt: any) => (
+                  <button 
+                    key={opt.id}
+                    onClick={() => handleFinalPayment(opt.id, opt.price)}
+                    disabled={loadingId !== null}
+                    className={`w-full bg-black/60 p-6 rounded-[2.5rem] border flex items-center justify-between group transition-all active:scale-95 ${
+                      opt.demand ? 'border-red-600 shadow-[0_0_20px_rgba(220,38,38,0.15)]' : 'border-white/5'
+                    }`}
+                  >
+                    <div className="text-left">
+                      <div className="flex items-center gap-2">
+                        <p className={`text-[9px] font-black uppercase tracking-[0.2em] mb-1 ${opt.demand ? 'text-red-600' : 'text-zinc-500'}`}>
+                          {opt.label}
+                        </p>
+                        {opt.demand && (
+                          <span className="bg-red-600 text-[6px] text-white px-2 py-0.5 rounded-full animate-pulse tracking-normal">HIGH DEMAND</span>
+                        )}
+                      </div>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-2xl font-black italic">{opt.price}</span>
+                        <span className="text-[8px] text-zinc-600 font-bold uppercase tracking-tighter">{opt.period}</span>
+                      </div>
+                    </div>
+                    
+                    {loadingId === opt.id ? (
+                      <Loader2 className="animate-spin text-red-600" size={24}/>
+                    ) : (
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${opt.demand ? 'bg-red-600 text-white' : 'bg-zinc-900 text-zinc-600 border border-white/5 group-hover:bg-white group-hover:text-black'}`}>
+                         <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    )}
+                  </button>
+                ))}
               </div>
 
-              <p className="mt-8 text-[8px] text-zinc-600 text-center font-black uppercase tracking-[0.3em] leading-loose">
-                Secure 256-bit encryption active <br/> Anonymous Billing Protocol enabled
+              <p className="mt-8 text-[8px] text-zinc-700 text-center font-black uppercase tracking-[0.4em]">
+                Secure Encryption Active • No Identity Trace
               </p>
             </motion.div>
           </div>
