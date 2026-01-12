@@ -15,7 +15,6 @@ export default function HomePage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        // 1. Check Subscription
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           const { data: profile } = await supabase
@@ -27,7 +26,6 @@ export default function HomePage() {
           if (profile?.subscription_tier === "Highest") setIsVip(true);
         }
 
-        // 2. Fetch Talent
         const { data, error } = await supabase
           .from("discovery")
           .select("*")
@@ -41,7 +39,6 @@ export default function HomePage() {
       } catch (err) {
         console.error("Fetch Error:", err);
       } finally {
-        // Short delay for the animation
         setTimeout(() => setLoading(false), 1800); 
       }
     }
@@ -50,22 +47,25 @@ export default function HomePage() {
 
   if (loading)
     return (
-      <div className="bg-black min-h-screen flex flex-col justify-center items-center">
-        {/* COMPACT SCANNER (Reduced Size) */}
-        <div className="relative w-16 h-16 flex items-center justify-center">
-          <div className="absolute inset-0 border border-zinc-800 rounded-2xl"></div>
+      <div className="bg-black min-h-screen flex items-center justify-center">
+        {/* WRAPPER TO STACK SCANNER AND TEXT */}
+        <div className="flex flex-col items-center">
           
-          {/* Scanning Beam */}
-          <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-red-600/20 to-transparent animate-scan-y"></div>
-          
-          <svg viewBox="0 0 24 24" fill="none" className="w-8 h-8 text-red-600 drop-shadow-[0_0_8px_rgba(220,38,38,0.8)]">
-            <path d="M5 3H3v2M19 3h2v2M5 21H3v-2M19 21h2v-2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-            <circle cx="12" cy="12" r="1" fill="currentColor" />
-          </svg>
-        </div>
+          {/* COMPACT SCANNER */}
+          <div className="relative w-16 h-16 flex items-center justify-center">
+            <div className="absolute inset-0 border border-zinc-800 rounded-2xl"></div>
+            
+            {/* Scanning Beam */}
+            <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-red-600/20 to-transparent animate-scan-y"></div>
+            
+            <svg viewBox="0 0 24 24" fill="none" className="w-8 h-8 text-red-600 drop-shadow-[0_0_8px_rgba(220,38,38,0.8)]">
+              <path d="M5 3H3v2M19 3h2v2M5 21H3v-2M19 21h2v-2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <circle cx="12" cy="12" r="1" fill="currentColor" />
+            </svg>
+          </div>
 
-        <div className="mt-6 text-center">
-          <p className="text-[8px] font-black uppercase tracking-[0.5em] text-red-600 animate-pulse">
+          {/* TEXT DIRECTLY UNDER SCANNER */}
+          <p className="mt-4 text-[8px] font-black uppercase tracking-[0.5em] text-red-600 animate-pulse">
             Vybing...
           </p>
         </div>
@@ -83,12 +83,11 @@ export default function HomePage() {
 
   return (
     <main className="bg-black min-h-screen text-white p-4 pb-24">
-      {/* MINIMAL HEADER */}
       <header className="py-6 text-center">
         <h1 className="text-2xl font-black italic uppercase tracking-tighter">VYBE</h1>
       </header>
 
-      {/* TABS (Backroom as a Tab) */}
+      {/* TABS */}
       <div className="flex justify-center mb-8">
         <div className="bg-zinc-900/80 p-1 rounded-2xl flex gap-1 border border-white/5 w-full max-w-[320px]">
           <button 
@@ -108,7 +107,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* CONTENT AREA */}
       <div className="transition-all duration-500">
         {activeTab === "public" ? (
           <section>
@@ -127,7 +125,6 @@ export default function HomePage() {
                 <HomeGrid girls={backroomGirls} />
               )
             ) : (
-              /* THE LOCKED BACKROOM VIEW */
               <div className="mt-4 flex flex-col items-center justify-center text-center p-8 border border-white/5 bg-zinc-900/20 rounded-[3rem]">
                 <div className="w-14 h-14 rounded-full bg-zinc-900 border border-red-600/30 flex items-center justify-center mb-6">
                   <Lock size={20} className="text-red-600" />
