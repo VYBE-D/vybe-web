@@ -3,177 +3,251 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabase"; 
-import { X, Info, Send, Calendar, MapPin, Clock, ArrowRight, Loader2, ShoppingCart } from "lucide-react";
+import { 
+  X, Info, Calendar, MapPin, 
+  ArrowRight, Loader2, ChevronDown, 
+  Lock 
+} from "lucide-react";
 
 export default function HomeGrid({ girls }: { girls: any[] }) {
   const router = useRouter();
+  
+  // -- STATE MANAGEMENT --
   const [selected, setSelected] = useState<any>(null);
   const [mode, setMode] = useState<"view" | "book">("view"); 
   const [loading, setLoading] = useState(false);
-
-  // --- NEW: STORE STATE ---
-  const [allProducts, setAllProducts] = useState<any[]>([]);
-  const [cart, setCart] = useState<any[]>([]);
-
-  // Booking Form State
+  
+  // These control the inputs directly
   const [date, setDate] = useState("");
   const [venue, setVenue] = useState("");
-  const [hours, setHours] = useState(2);
-  const [notes, setNotes] = useState("");
 
-  // --- NEW: FETCH PRODUCTS ---
-  useEffect(() => {
-    const fetchStore = async () => {
-      const { data } = await supabase.from("products").select("*");
-      if (data) setAllProducts(data);
-    };
-    fetchStore();
-  }, []);
+  // -- HANDLERS --
 
-  // --- NEW: TOGGLE CART LOGIC ---
-  const toggleCart = (product: any) => {
-    const isAlreadyInCart = cart.find((item) => item.id === product.id);
-    if (isAlreadyInCart) {
-      setCart(cart.filter((item) => item.id !== product.id));
-    } else {
-      setCart([...cart, product]);
-    }
+  // 1. Open Profile & Reset Form
+  const openProfile = (girl: any) => {
+    setSelected(girl);
+    setMode("view");
+    setDate("");  // Reset date so it's fresh
+    setVenue(""); // Reset venue so it's fresh
   };
 
-  const handleConfirmBooking = async () => {
-    if (!date || !venue) return alert("Date and Venue are required.");
+  // 2. Submit Logic
+  const handleConfirmAndChat = async () => {
+    // Debug: Check if state is capturing input
+    console.log("Submitting:", { date, venue });
+
+    if (!date) return alert("Please select a Date and Time.");
+    if (!venue.trim()) return alert("Please enter the Venue Address.");
+
     setLoading(true);
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-        alert("Please log in to book.");
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
         setLoading(false);
-        return;
+        return router.push('/login');
+      }
+
+      // Create/Get Conversation
+      const { data: conv } = await supabase
+        .from("conversations")
+        .upsert({ user_id: user.id, talent_id: selected.id }, { onConflict: 'user_id,talent_id' })
+        .select().single();
+
+      // Calculate Total
+      const grandTotal = Number(selected.price) || 0;
+
+      // Send to Payment API
+      const response = await fetch("/api/payments/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          userId: user.id,
+          amount: grandTotal,
+          talentId: selected.id,
+          conversationId: conv.id,
+          metadata: { 
+            date: date,    // passing the state variable
+            venue: venue   // passing the state variable
+          }
+        }),
+      });
+
+      const paymentData = await response.json();
+      if (paymentData.invoice_url) {
+        window.location.href = paymentData.invoice_url;
+      } else {
+        throw new Error("Payment link generation failed.");
+      }
+
+    } catch (err) {
+      console.error(err);
+      alert("System error. Please try again.");
+    } finally {
+      setLoading(false);
     }
-
-    const { data: conversation, error } = await supabase
-      .from("conversations")
-      .insert([{ 
-        user_id: user.id, 
-        talent_id: selected.id, 
-        last_message: "Booking Inquiry Sent" 
-      }])
-      .select()
-      .single();
-
-    if (error) {
-        setLoading(false);
-        return;
-    }
-
-    // --- NEW: FORMAT CART SUMMARY ---
-    const cartSummary = cart.length > 0 
-        ? cart.map(item => `• ${item.name} ($${item.price})`).join('\n')
-        : "No items selected";
-
-    const bookingDetails = `🚨 *NEW BOOKING REQUEST*\n\n📅 DATE: ${date}\n📍 VENUE: ${venue}\n⏳ DURATION: ${hours} Hours\n🛒 STORE ITEMS:\n${cartSummary}\n\n📝 NOTE: ${notes || "None"}`;
-
-    await supabase.from("messages").insert([{
-      conversation_id: conversation.id,
-      sender_id: user.id,
-      content: bookingDetails
-    }]);
-
-    router.push(`/chat?id=${conversation.id}`);
   };
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-4 max-w-4xl mx-auto">
+      {/* 1. DISCOVERY GRID */}
+      <div className="grid grid-cols-2 gap-4 max-w-4xl mx-auto px-4 pb-20">
         {girls.map((girl) => (
           <div 
             key={girl.id} 
-            onClick={() => { setSelected(girl); setMode("view"); setCart([]); }} // Reset cart on select
-            className="group relative aspect-[3/4] rounded-[2.5rem] overflow-hidden border border-white/5 cursor-pointer active:scale-95 transition-all duration-500"
+            onClick={() => openProfile(girl)} 
+            className="group relative aspect-[3/4] rounded-[2.5rem] overflow-hidden border border-white/5 cursor-pointer active:scale-95 transition-all duration-500 shadow-2xl"
           >
-            <img src={girl.image_url} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition duration-700" alt={girl.name} />
-            <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black via-black/60 to-transparent text-white">
-              <p className="font-black italic uppercase text-xl leading-none">{girl.name}</p>
-              <p className="text-[8px] font-bold text-red-600 tracking-widest mt-2 uppercase">{girl.category || 'New Talent'}</p>
+            <img 
+              src={girl.image_url} 
+              className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition duration-700" 
+              alt={girl.name} 
+            />
+            
+            <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black via-black/70 to-transparent">
+              <p className="text-[7px] font-black text-red-600 tracking-[0.3em] uppercase mb-1 opacity-90">
+                {girl.category || "New Face"}
+              </p>
+              <p className="font-black italic uppercase text-xl text-white leading-none">{girl.name}</p>
+              <p className="text-[8px] font-bold text-zinc-400 tracking-widest uppercase mt-2">
+                {girl.role || "Elite Personnel"}
+              </p>
             </div>
           </div>
         ))}
       </div>
 
+      {/* 2. PROFILE & CHECKOUT MODAL */}
       {selected && (
-        <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl p-6 flex flex-col animate-in fade-in zoom-in duration-300 overflow-y-auto">
-          <button onClick={() => setSelected(null)} className="self-end p-2 text-gray-400 hover:text-white mb-2">
-            <X size={32} />
-          </button>
+        <div className="fixed inset-0 z-[100] bg-black overflow-y-auto animate-in slide-in-from-bottom duration-500">
+          
+          {/* Sticky Header */}
+          <div className="sticky top-0 z-[110] p-6 flex justify-between items-center bg-gradient-to-b from-black to-transparent">
+             <button 
+                onClick={() => setSelected(null)} 
+                className="bg-black/50 backdrop-blur-md p-3 rounded-full text-white border border-white/10 shadow-2xl hover:bg-red-600 transition-colors"
+             >
+                <X size={24} />
+             </button>
+             <h2 className="text-xs font-black uppercase tracking-[0.4em] text-white/40">{selected.category}</h2>
+             <div className="w-12"></div>
+          </div>
 
-          <div className="flex-1 flex flex-col items-center max-w-md mx-auto w-full space-y-6">
-            
-            {mode === "view" && (
-                <>
-                    <div className="w-48 h-48 rounded-full overflow-hidden border-2 border-red-600">
-                        <img src={selected.image_url} className="w-full h-full object-cover" />
+          <div className="flex flex-col w-full pb-40">
+            {mode === "view" ? (
+              <>
+                {/* --- VIEW MODE --- */}
+                <div className="w-full h-[85vh] relative px-4">
+                  <img src={selected.image_url} className="w-full h-full object-cover rounded-[3.5rem] shadow-2xl" />
+                  <div className="absolute bottom-12 left-10">
+                    <p className="text-red-600 font-black uppercase tracking-[0.4em] text-[10px] mb-2 drop-shadow-lg">
+                        {selected.category}
+                    </p>
+                    <h1 className="text-6xl font-black italic uppercase tracking-tighter text-white drop-shadow-2xl">
+                        {selected.name}
+                    </h1>
+                  </div>
+                  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 animate-bounce opacity-30">
+                    <ChevronDown size={32} className="text-white" />
+                  </div>
+                </div>
+
+                <div className="p-6">
+                   <div className="bg-zinc-900/50 border border-white/5 p-8 rounded-[3rem] backdrop-blur-sm">
+                      <div className="flex items-center gap-2 text-red-600 mb-4">
+                         <Info size={18} /><span className="text-[10px] font-black uppercase tracking-widest text-white">Advanced Intel</span>
+                      </div>
+                      <p className="text-xl text-zinc-300 italic leading-relaxed font-medium">"{selected.bio}"</p>
+                   </div>
+                </div>
+
+                {selected.gallery?.slice(1).map((img: string, idx: number) => (
+                  <div key={idx} className="w-full h-[85vh] px-4 mb-6">
+                    <img src={img} className="w-full h-full object-cover rounded-[3.5rem] border border-white/5 shadow-2xl" />
+                  </div>
+                ))}
+
+                <div className="fixed bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black via-black/90 to-transparent z-[120]">
+                  <button 
+                    onClick={() => { setMode("book"); window.scrollTo(0,0); }} 
+                    className="w-full bg-white text-black py-6 rounded-full font-black uppercase tracking-[0.2em] shadow-2xl active:scale-95 transition-all"
+                  >
+                    Initiate Deployment
+                  </button>
+                </div>
+              </>
+            ) : (
+              /* --- CHECKOUT MODE --- */
+              <div className="p-6 space-y-6 pt-10 max-w-md mx-auto w-full">
+                <div className="text-center space-y-2 mb-8">
+                    <h3 className="text-3xl font-black italic uppercase text-red-600">Secure Checkout</h3>
+                    <p className="text-[10px] font-bold text-zinc-500 tracking-[0.3em] uppercase">Talent: {selected.name}</p>
+                </div>
+                
+                <div className="bg-zinc-900/80 p-7 rounded-[3.5rem] border border-white/10 space-y-6 backdrop-blur-xl">
+                    {/* Date Input */}
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 flex items-center gap-2">
+                        <Calendar size={12}/> Date and Time
+                      </label>
+                      <input 
+                        type="datetime-local" 
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
+                        className="w-full bg-black border border-white/10 p-5 rounded-2xl outline-none invert text-white font-bold" 
+                      />
                     </div>
-                    <div className="text-center text-white">
-                        <h2 className="text-4xl font-black italic uppercase tracking-tighter">{selected.name}</h2>
-                        <span className="text-red-600 font-bold text-[10px] uppercase tracking-widest">{selected.category}</span>
+
+                    {/* Venue Input */}
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 flex items-center gap-2">
+                        <MapPin size={12}/> Venue Address
+                      </label>
+                      <input 
+                        type="text" 
+                        value={venue}
+                        onChange={(e) => setVenue(e.target.value)}
+                        placeholder="Street, Suite, City..." 
+                        className="w-full bg-black border border-white/10 p-5 rounded-2xl outline-none text-white font-bold placeholder:text-zinc-700" 
+                      />
                     </div>
-                    <div className="w-full bg-white/5 border border-white/10 p-6 rounded-[2rem] space-y-3">
-                        <div className="flex items-center gap-2 text-red-600"><Info size={14} /><span className="text-[10px] font-black uppercase tracking-widest text-white">Personnel Dossier</span></div>
-                        <p className="text-sm leading-relaxed text-gray-300 italic">"{selected.bio || "Available for exclusive bookings."}"</p>
+                </div>
+
+                <div className="flex flex-col gap-4">
+                    {/* Price Summary */}
+                    <div className="p-8 bg-zinc-900 rounded-[3rem] border border-red-600/30 flex justify-between items-center shadow-2xl">
+                        <div>
+                            <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Deployment Fee</p>
+                            <p className="text-4xl font-black italic text-white">
+                                ${selected.price || '0'}
+                            </p>
+                        </div>
+                        <div className="bg-red-600/10 p-4 rounded-2xl">
+                           <Lock className="text-red-600" size={24} />
+                        </div>
                     </div>
-                    <button onClick={() => setMode("book")} className="w-full bg-white text-black py-5 rounded-2xl font-black uppercase tracking-widest">
-                        Proceed to Booking
+
+                    {/* Submit Button */}
+                    <button 
+                      onClick={handleConfirmAndChat} 
+                      disabled={loading} 
+                      className="w-full bg-red-600 py-6 rounded-full font-black uppercase tracking-widest flex items-center justify-center gap-3 text-white shadow-[0_0_50px_rgba(220,38,38,0.3)] active:scale-95 transition-all"
+                    >
+                      {loading ? (
+                        <Loader2 className="animate-spin" size={24}/>
+                      ) : (
+                        <>Confirm & Chat <ArrowRight size={20}/></>
+                      )}
                     </button>
-                </>
-            )}
-
-            {mode === "book" && (
-                <div className="w-full space-y-4 animate-in slide-in-from-right duration-300 text-white pb-10">
-                    <div className="text-center mb-6">
-                        <h3 className="text-2xl font-black italic uppercase text-red-600">Mission Details</h3>
-                    </div>
                     
-                    <div className="bg-zinc-900/50 p-4 rounded-2xl border border-white/10 space-y-4">
-                        <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-gray-500 uppercase ml-2 flex items-center gap-2"><Calendar size={12}/> Date & Time</label>
-                            <input type="datetime-local" value={date} onChange={e => setDate(e.target.value)} className="w-full bg-black border border-white/10 p-3 rounded-xl outline-none text-xs uppercase invert text-white" />
-                        </div>
-                        <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-gray-500 uppercase ml-2 flex items-center gap-2"><MapPin size={12}/> Venue</label>
-                            <input value={venue} onChange={e => setVenue(e.target.value)} placeholder="Location..." className="w-full bg-black border border-white/10 p-3 rounded-xl outline-none text-sm font-bold text-white" />
-                        </div>
-
-                        {/* --- NEW: STORE CAROUSEL --- */}
-                        <div className="space-y-2 py-2">
-                          <label className="text-[10px] font-bold text-gray-500 uppercase ml-2 flex items-center gap-2"><ShoppingCart size={12}/> Mission Essentials</label>
-                          <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
-                            {allProducts.map((item) => {
-                              const active = cart.find(p => p.id === item.id);
-                              return (
-                                <div 
-                                  key={item.id} 
-                                  onClick={() => toggleCart(item)}
-                                  className={`min-w-[110px] p-3 rounded-2xl border transition-all cursor-pointer ${active ? 'bg-red-600 border-red-500 scale-95' : 'bg-black border-white/10'}`}
-                                >
-                                  <img src={item.image_url} className="w-full h-14 object-cover rounded-lg mb-2" />
-                                  <p className="text-[9px] font-black uppercase truncate leading-none mb-1">{item.name}</p>
-                                  <p className="text-[10px] font-bold text-white opacity-60">${item.price}</p>
-                                </div>
-                              )
-                            })}
-                          </div>
-                        </div>
-
-                        <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-gray-500 uppercase ml-2">Notes</label>
-                            <textarea value={notes} onChange={e => setNotes(e.target.value)} className="w-full bg-black border border-white/10 p-3 rounded-xl outline-none text-sm h-16 text-white" placeholder="..." />
-                        </div>
-                    </div>
-
-                    <button onClick={handleConfirmBooking} disabled={loading} className="w-full bg-red-600 py-5 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-2 text-white">
-                        {loading ? <Loader2 className="animate-spin"/> : <>Confirm & Chat <ArrowRight size={18}/></>}
+                    <button 
+                      onClick={() => setMode("view")} 
+                      className="text-[10px] font-black text-zinc-600 uppercase tracking-widest hover:text-white transition-colors"
+                    >
+                        Back to Intel
                     </button>
                 </div>
+              </div>
             )}
           </div>
         </div>

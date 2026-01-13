@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
-import { MessageSquare, Upload, Trash2, ArrowLeft, Loader2, Camera, UserX, X, Lock, Globe } from "lucide-react";
+import { MessageSquare, Upload, Trash2, ArrowLeft, Loader2, Camera, UserX, X, Lock, Globe, DollarSign } from "lucide-react";
 
 export default function PostTalentPage() {
   const router = useRouter();
@@ -12,8 +12,9 @@ export default function PostTalentPage() {
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [role, setRole] = useState("");
+  const [price, setPrice] = useState(""); // NEW: Price state
   const [category, setCategory] = useState("New Face");
-  const [isBackroom, setIsBackroom] = useState(false); // NEW: Backroom Toggle
+  const [isBackroom, setIsBackroom] = useState(false); 
 
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
@@ -65,16 +66,16 @@ export default function PostTalentPage() {
         name, 
         bio, 
         role,
+        price: Number(price), // Submission includes Price
         image_url: uploadedUrls[0],
         gallery: uploadedUrls, 
-        // If isBackroom is true, we set category specifically to 'Backroom'
         category: isBackroom ? "Backroom" : category,
-        is_backroom: isBackroom // Ensure this column exists in your Supabase table
+        is_backroom: isBackroom 
       }]);
 
       if (dbError) throw dbError;
 
-      setName(""); setBio(""); setRole(""); setFiles([]); setPreviews([]); setIsBackroom(false);
+      setName(""); setBio(""); setRole(""); setPrice(""); setFiles([]); setPreviews([]); setIsBackroom(false);
       fetchTalents();
       alert(isBackroom ? "Personnel deployed to Backroom!" : "Personnel deployed to Discovery!");
     } catch (err: any) {
@@ -146,9 +147,22 @@ export default function PostTalentPage() {
 
             <div className="space-y-4">
               <input required value={name} onChange={e => setName(e.target.value)} placeholder="Personnel Name" className="w-full bg-black border border-white/10 p-4 rounded-2xl outline-none focus:border-red-600" />
+              
+              {/* PRICE FIELD - Positioned under Name */}
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 font-bold">$</span>
+                <input 
+                  type="number" 
+                  required 
+                  value={price} 
+                  onChange={e => setPrice(e.target.value)} 
+                  placeholder="Base Rate (USD)" 
+                  className="w-full bg-black border border-white/10 p-4 pl-8 rounded-2xl outline-none focus:border-red-600 font-bold" 
+                />
+              </div>
+
               <input value={role} onChange={e => setRole(e.target.value)} placeholder="Role (e.g. GFE, Elite Escort)" className="w-full bg-black border border-white/10 p-4 rounded-2xl outline-none focus:border-red-600 text-red-500 font-bold" />
               
-              {/* Category selector is disabled if it's a Backroom post */}
               <select 
                 disabled={isBackroom}
                 value={isBackroom ? "Backroom" : category} 
@@ -188,7 +202,9 @@ export default function PostTalentPage() {
                             <div>
                                 <h3 className="font-black uppercase italic text-sm leading-none mb-1">{girl.name}</h3>
                                 <div className="flex items-center gap-2">
-                                    <p className="text-[9px] text-red-600 font-bold uppercase tracking-widest">{girl.role || girl.category}</p>
+                                    <p className="text-[9px] text-red-600 font-bold uppercase tracking-widest">
+                                      {girl.price ? `$${girl.price} • ` : ''}{girl.role || girl.category}
+                                    </p>
                                     {girl.category === "Backroom" && <span className="text-[8px] bg-red-600/10 text-red-600 px-1 rounded font-black tracking-tighter">SECURE</span>}
                                 </div>
                             </div>
