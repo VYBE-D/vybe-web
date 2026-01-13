@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from "../../../../lib/supabase"; // Import your supabase client
 import { 
   ChevronLeft, 
   ShieldCheck, 
@@ -74,25 +75,41 @@ export default function MembershipPage() {
   const [selectedMainTier, setSelectedMainTier] = useState<any | null>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
+  // UPDATED: Logic to include User ID
   const handleFinalPayment = async (optionId: string, amount: string) => {
     setLoadingId(optionId);
     try {
-      const response = await fetch("/api/payments/nowpayments", {
+      // 1. Establish Identity: Get the current user
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        alert("ACCESS DENIED: Please log in to upgrade clearance.");
+        return;
+      }
+
+      // 2. Initiate Protocol: Send user ID and tier details to your API
+      const response = await fetch("/api/payments/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
-          amount: amount.replace('$', ''), 
-          tierId: optionId 
+          userId: user.id, // THE CRITICAL ADDITION
+          tierName: optionId, 
+          price: amount.replace('$', '').trim() 
         }),
       });
+
       const data = await response.json();
+
       if (data.invoice_url) {
+        // 3. Deployment: Redirect to secure payment gateway
         window.location.href = data.invoice_url;
       } else {
         console.error("Gateway Error:", data.error);
+        alert("PROTOCOL ERROR: Could not establish payment link.");
       }
     } catch (error) {
       console.error("Connection Error:", error);
+      alert("SIGNAL LOST: Check network connection.");
     } finally {
       setLoadingId(null);
     }
@@ -154,7 +171,6 @@ export default function MembershipPage() {
               </div>
             </div>
 
-            {/* FEATURES LIST */}
             <div className="flex flex-col gap-4 mb-10 mt-6">
               {tier.features.map((feat) => (
                 <div key={feat} className="flex items-start gap-4">
