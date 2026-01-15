@@ -3,9 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { supabase } from "../../../../lib/supabase";
-import { ChevronLeft, Flame, MapPin, ShieldCheck, Heart, Zap, Globe } from "lucide-react";
+import { 
+  ChevronLeft, Flame, 
+  ShieldCheck, Zap, 
+  Lock, Cpu, Activity
+} from "lucide-react";
 
-export default function PublicProfileView() {
+export default function IdentityVault() {
   const router = useRouter();
   const [profile, setProfile] = useState<any>(null);
 
@@ -31,91 +35,104 @@ export default function PublicProfileView() {
   );
 
   return (
-    <main className="min-h-screen bg-black text-white relative">
+    <main className="min-h-screen bg-[#050505] text-white relative font-sans overflow-hidden flex flex-col">
       
-      {/* 1. TOP IMAGE AREA */}
-      <div className="relative h-[65vh] w-full">
-        <img 
-          src={profile.photos?.[0] || "/avatar.jpg"} 
-          className="w-full h-full object-cover" 
-          alt="Profile" 
-        />
+      {/* 1. BACKGROUND AMBIENCE */}
+      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/asfalt-dark.png')] opacity-20 pointer-events-none" />
+      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-red-900/10 via-black to-black pointer-events-none" />
+
+      {/* 2. HUD HEADER (The Core Identity) */}
+      <div className="relative h-[60vh] w-full flex flex-col items-center justify-center bg-black/40">
         
-        {/* Gradient Overlay for Text Readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black" />
+        {/* Animated Scanner Line */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="w-full h-[1px] bg-red-600/20 shadow-[0_0_20px_rgba(220,38,38,0.5)] absolute animate-scan" />
+        </div>
 
         {/* Back Button */}
         <button 
           onClick={() => router.back()}
-          className="absolute top-6 left-4 p-3 bg-black/40 backdrop-blur-md border border-white/10 rounded-full"
+          className="absolute top-8 left-6 p-4 bg-zinc-900/30 border border-white/5 rounded-2xl hover:bg-white/10 transition-all z-50 backdrop-blur-md"
         >
-          <ChevronLeft size={24} />
+          <ChevronLeft size={20} />
         </button>
 
-        {/* Name & Verification Badge */}
-        <div className="absolute bottom-6 left-6">
-          <div className="flex items-center gap-2 mb-1">
-            <h1 className="text-4xl font-black tracking-tighter uppercase italic">
-              {profile.nickname || "ANONYMOUS"}
+        {/* VYBE LOGO CORE */}
+        <div className="relative mb-10">
+            <div className="absolute -inset-10 bg-red-600/10 rounded-full blur-3xl animate-pulse" />
+            <div className="relative w-40 h-40 rounded-full border border-white/5 flex items-center justify-center bg-zinc-900/20 shadow-2xl backdrop-blur-2xl">
+                <div className="relative">
+                    <Flame size={60} className="text-red-600 opacity-90" fill="currentColor" />
+                    <Zap size={28} className="text-white absolute -bottom-2 -right-2 drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]" fill="currentColor" />
+                </div>
+            </div>
+        </div>
+
+        {/* Identity Text */}
+        <div className="text-center z-10 px-6">
+          <div className="flex items-center justify-center gap-3 mb-3">
+            <h1 className="text-5xl font-black tracking-tighter uppercase italic text-white">
+              {profile.nickname || "NODE_00"}
             </h1>
-            <ShieldCheck size={24} className="text-blue-400 fill-blue-400/20" />
+            <ShieldCheck size={24} className="text-red-600" />
           </div>
-          <div className="flex items-center gap-2 text-zinc-400">
-            <MapPin size={16} className="text-red-600" />
-            <span className="font-bold text-xs uppercase tracking-widest">
-              {profile.hosting === 'host' ? 'Can Host • Lagos' : 'Can Travel • Lagos'}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. INFO SECTION (Glass Cards) */}
-      <div className="px-4 -mt-4 relative z-10 space-y-4 pb-32">
-        
-        {/* Tags Row - Now Functional from DB */}
-        <div className="flex flex-wrap gap-2">
-          {profile.intent?.map((tag: string) => (
-            <div key={tag} className="bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 rounded-full flex items-center gap-2">
-              <Flame size={14} className="text-red-500" />
-              <span className="text-[10px] font-black uppercase tracking-widest">{tag}</span>
-            </div>
-          ))}
-          {profile.sub_intents?.slice(0, 2).map((sub: string) => (
-            <div key={sub} className="bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 rounded-full flex items-center gap-2">
-              <Zap size={14} className="text-yellow-400" />
-              <span className="text-[10px] font-black uppercase tracking-widest">{sub}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Vibe Details Card */}
-        <div className="bg-zinc-900/50 border border-white/10 rounded-3xl p-6 backdrop-blur-xl">
-          <div className="flex items-center gap-2 mb-3">
-            <Heart size={18} className="text-red-600 fill-red-600/20" />
-            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Current Intent</h3>
-          </div>
-          <p className="text-lg font-bold italic uppercase tracking-tight text-white">
-            {profile.sub_intents?.join(" • ") || "Looking for a vibe"}
+          <p className="text-[11px] font-mono text-zinc-600 tracking-[0.6em] uppercase">
+            Access ID: {profile.id?.substring(0, 16).toUpperCase()}
           </p>
         </div>
+      </div>
 
-        {/* Underground Status */}
-        <div className="flex items-center justify-center gap-4 py-6">
-            <div className="h-[1px] flex-1 bg-zinc-800" />
-            <p className="text-[9px] text-zinc-600 font-black uppercase tracking-[0.4em]">
-              Underground Vybe Verified
+      {/* 3. STATUS ARRAY */}
+      <div className="px-8 flex-1 flex flex-col justify-start pt-12 space-y-4 relative z-10">
+        
+        <div className="flex gap-4">
+            <div className="flex-1 bg-zinc-900/40 border border-white/5 p-6 rounded-[2rem] backdrop-blur-xl">
+                <div className="flex items-center gap-2 mb-2 text-zinc-500">
+                    <Activity size={14} />
+                    <span className="text-[9px] font-black uppercase tracking-[0.2em]">Signal</span>
+                </div>
+                <p className="text-sm font-bold text-green-500 uppercase tracking-widest">Active</p>
+            </div>
+            
+            <div className="flex-1 bg-zinc-900/40 border border-white/5 p-6 rounded-[2rem] backdrop-blur-xl">
+                <div className="flex items-center gap-2 mb-2 text-zinc-500">
+                    <Lock size={14} />
+                    <span className="text-[9px] font-black uppercase tracking-[0.2em]">Auth</span>
+                </div>
+                <p className="text-sm font-bold text-white uppercase italic tracking-widest">Verified</p>
+            </div>
+        </div>
+
+        {/* Sub-Header Info */}
+        <div className="pt-8 flex flex-col items-center">
+            <div className="w-12 h-[1px] bg-red-600/50 mb-6" />
+            <p className="text-[10px] font-black text-zinc-700 uppercase tracking-[0.5em] text-center leading-relaxed">
+                Identity Record Locked<br/>
+                End-to-End Encryption Active
             </p>
-            <div className="h-[1px] flex-1 bg-zinc-800" />
         </div>
       </div>
 
-      {/* 3. FLOATING ACTION BUTTON */}
-      <div className="fixed bottom-8 left-0 right-0 px-8 flex justify-center">
-        <button className="w-full max-w-xs bg-white text-black py-4 rounded-full font-black italic uppercase tracking-widest text-sm shadow-2xl transition-transform active:scale-95 flex items-center justify-center gap-3">
-          <Flame size={20} fill="black" />
-          Send a Vybe
-        </button>
+      {/* 4. SYSTEM DECORATION FOOTER */}
+      <div className="p-10 opacity-10 pointer-events-none mt-auto">
+        <div className="flex items-center gap-4">
+            <Cpu size={14} />
+            <div className="h-[1px] flex-1 bg-white/20" />
+            <span className="text-[8px] font-mono tracking-widest">SYSTEM_V.2</span>
+        </div>
       </div>
+
+      <style jsx>{`
+        @keyframes scan {
+          0% { top: 0%; opacity: 0; }
+          10% { opacity: 1; }
+          90% { opacity: 1; }
+          100% { top: 100%; opacity: 0; }
+        }
+        .animate-scan {
+          animation: scan 5s linear infinite;
+        }
+      `}</style>
 
     </main>
   );
