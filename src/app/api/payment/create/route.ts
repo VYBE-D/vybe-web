@@ -4,91 +4,97 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     
-    // Destructure all possible fields from the frontend request
     const { 
       userId, 
-      tierName,      // Present if upgrading membership
-      talentId,      // Present if unlocking a girl/chat
-      items,         // Present if buying from store (Array of IDs)
-      amount,        // The dollar amount (e.g., 50)
-      price          // Alternative field name for amount
+      tierName,      
+      talentId,      
+      items,         
+      amount,        
+      price          
     } = body;
 
-    // 1. Validate User
+    const apiKey = process.env.NOWPAYMENTS_API_KEY;
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://your-domain.com";
+
+    // 1. Validate Environment
+    if (!apiKey) {
+      console.error("CRITICAL: NOWPAYMENTS_API_KEY is missing in environment variables.");
+      return NextResponse.json({ error: "Server Configuration Error: API Key missing." }, { status: 500 });
+    }
+
+    // 2. Validate Input
     if (!userId) {
       return NextResponse.json({ error: "User ID is required" }, { status: 400 });
     }
 
-    // 2. Determine Payment Type & Construct Order ID
+    const finalAmount = amount || price;
+    if (!finalAmount || finalAmount < 5) { // NowPayments usually requires at least $5
+      return NextResponse.json({ error: "Invalid Amount. Minimum is $5.00 USD" }, { status: 400 });
+    }
+
+    // 3. Construct Order ID (Matches your Webhook logic)
     let orderId = "";
     let orderDesc = "";
-    let successUrl = "";
-    const finalAmount = amount || price; // Handle either naming convention
+    let successUrl = `${siteUrl}/`;
 
-    // --- SCENARIO A: MEMBERSHIP UPGRADE ---
-    // Matches Webhook Logic (Fallback case: userId:tierName)
     if (tierName) {
       orderId = `${userId}:${tierName}`; 
-      orderDesc = `VYBE Upgrade: ${tierName} Tier`;
-      successUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/profile`;
-    }
-    
-    // --- SCENARIO B: CHAT / TALENT UNLOCK ---
-    // Matches Webhook Logic A (CHAT_UNLOCK:userId:talentId)
+      orderDesc = `VYBE Upgrade: ${tierName}`;
+      successUrl = `${siteUrl}/membership/success`;
+    } 
     else if (talentId) {
       orderId = `CHAT_UNLOCK:${userId}:${talentId}`;
-      orderDesc = `Secure Line Unlock: Talent ${talentId}`;
-      successUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/messages`; // Go straight to chat
+      orderDesc = `Direct Unlock: Talent ${talentId}`;
+      successUrl = `${siteUrl}/discovery`;
     }
-
-    // --- SCENARIO C: STORE PURCHASE ---
-    // Matches Webhook Logic B (STORE:userId:item1,item2)
-    else if (items && Array.isArray(items) && items.length > 0) {
-      // If items are objects {id: "123"}, map them. If strings, just join.
+    else if (items && Array.isArray(items)) {
       const itemIds = items.map((i: any) => i.id || i).join(",");
-      
       orderId = `STORE:${userId}:${itemIds}`;
-      orderDesc = `Arsenal Purchase: ${items.length} Item(s)`;
-      successUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/inventory`;
+      orderDesc = `Supply Requisition: ${items.length} Items`;
+      successUrl = `${siteUrl}/store/success`;
     } 
-    
-    // --- ERROR: UNKNOWN REQUEST ---
     else {
       return NextResponse.json({ error: "Invalid transaction type" }, { status: 400 });
     }
 
-    // 3. Create Payment with NowPayments
-    // We use /v1/payment to generate a dynamic invoice link
-    const response = await fetch("https://api.nowpayments.io/v1/payment", {
+    // 4. Create INVOICE (Not "Payment") with NowPayments
+    // CHANGED: Endpoint updated to /v1/invoice to get the link
+    const response = await fetch("https://api.nowpayments.io/v1/invoice", {
       method: "POST",
       headers: {
-        "x-api-key": process.env.NOWPAYMENTS_API_KEY || "", // Ensure this is in .env
+        "x-api-key": apiKey,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         price_amount: finalAmount,
-        price_currency: "usd",      // You set the price in USD
-        pay_currency: "btc",        // Default crypto (user can usually change this on gateway)
-        order_id: orderId,          // CRITICAL: This allows the Webhook to know what to unlock
+        price_currency: "usd",
+        order_id: orderId,
         order_description: orderDesc,
-        ipn_callback_url: `${process.env.NEXT_PUBLIC_SITE_URL}/api/nowpayments/webhook`,
+        ipn_callback_url: `${siteUrl}/api/payment/webhook`,
         success_url: successUrl,
-        cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/`,
+        cancel_url: `${siteUrl}/`,
       }),
     });
 
     const data = await response.json();
 
-    // 4. Return the Link to Frontend
+    // 5. Handle Response
     if (data.invoice_url) {
+      console.log("Success: Payment link generated for", orderId);
       return NextResponse.json({ invoice_url: data.invoice_url });
     } else {
-      console.error("NowPayments API Error:", data);
-      return NextResponse.json({ error: "Failed to generate payment link" }, { status: 500 });
+      // Log the full error from NowPayments to your Vercel Console
+      console.error("NowPayments Rejected Request:", data);
+      
+      // Return the specific error message to the frontend alert
+      return NextResponse.json({ 
+        error: data.message || "NowPayments failed to generate link.",
+        details: data
+      }, { status: 400 });
     }
 
   } catch (err: any) {
-    console.error("Payment Route Exception:", err.message);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    console.error("Payment Route Crash:", err);
+    return NextResponse.json({ error: "Internal Server Error", details: err.message }, { status: 500 });
   }
 }
