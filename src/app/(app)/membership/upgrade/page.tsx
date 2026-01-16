@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { supabase } from "../../../../lib/supabase"; // Import your supabase client
+import { supabase } from "../../../../lib/supabase"; 
 import { 
   ChevronLeft, 
   ShieldCheck, 
@@ -75,11 +75,10 @@ export default function MembershipPage() {
   const [selectedMainTier, setSelectedMainTier] = useState<any | null>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
-  // UPDATED: Logic to include User ID
-  const handleFinalPayment = async (optionId: string, amount: string) => {
+  // --- UPDATED: Logic to match unified payment route ---
+  const handleFinalPayment = async (optionId: string, displayPrice: string) => {
     setLoadingId(optionId);
     try {
-      // 1. Establish Identity: Get the current user
       const { data: { user } } = await supabase.auth.getUser();
 
       if (!user) {
@@ -87,29 +86,29 @@ export default function MembershipPage() {
         return;
       }
 
-      // 2. Initiate Protocol: Send user ID and tier details to your API
-      const response = await fetch("/api/payments/create", {
+      // Convert "$169.99" to number 169.99
+      const numericAmount = parseFloat(displayPrice.replace('$', '').trim());
+
+      const response = await fetch("/api/payment/create", { // Unified Route
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
-          userId: user.id, // THE CRITICAL ADDITION
-          tierName: optionId, 
-          price: amount.replace('$', '').trim() 
+          userId: user.id,
+          tierName: optionId, // Webhook uses this to know which tier to set
+          amount: numericAmount 
         }),
       });
 
       const data = await response.json();
 
       if (data.invoice_url) {
-        // 3. Deployment: Redirect to secure payment gateway
         window.location.href = data.invoice_url;
       } else {
-        console.error("Gateway Error:", data.error);
-        alert("PROTOCOL ERROR: Could not establish payment link.");
+        throw new Error(data.error || "Gateway Error");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Connection Error:", error);
-      alert("SIGNAL LOST: Check network connection.");
+      alert(`SIGNAL LOST: ${error.message || "Check network connection."}`);
     } finally {
       setLoadingId(null);
     }

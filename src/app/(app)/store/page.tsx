@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "../../../lib/supabase";
-import { ShoppingBag, Plus, Check, Package, ArrowRight, ShieldCheck, Zap, Flame } from "lucide-react";
+import { ShoppingBag, Plus, Minus, Check, Package, ArrowRight, ShieldCheck, Zap, Flame } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 
@@ -11,6 +11,8 @@ export default function UserStore() {
   const [products, setProducts] = useState<any[]>([]);
   const [inventory, setInventory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Cart now stores objects with { id, price, quantity, name }
   const [cart, setCart] = useState<any[]>([]);
 
   useEffect(() => {
@@ -23,23 +25,13 @@ export default function UserStore() {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
 
-    // 1. Fetch available Store Products
     const { data: storeProducts } = await supabase.from("products").select("*").order("name");
     
-    // 2. Fetch User's Arsenal (Joined with Products table for images/names)
     if (user) {
       const { data: owned } = await supabase
         .from("user_inventory")
-        .select(`
-          id,
-          product:products (
-            id,
-            name,
-            image_url
-          )
-        `)
+        .select(`id, product:products (id, name, image_url)`)
         .eq("user_id", user.id);
-        
       if (owned) setInventory(owned);
     }
 
@@ -47,16 +39,26 @@ export default function UserStore() {
     setLoading(false);
   };
 
-  const toggleCart = (product: any) => {
-    let newCart;
-    const exists = cart.find((item) => item.id === product.id);
-    if (exists) {
-      newCart = cart.filter((item) => item.id !== product.id);
-    } else {
-      newCart = [...cart, product];
+  // Logic to handle quantities
+  const updateQuantity = (product: any, delta: number) => {
+    let newCart = [...cart];
+    const index = newCart.findIndex((item) => item.id === product.id);
+
+    if (index !== -1) {
+      newCart[index].quantity += delta;
+      if (newCart[index].quantity <= 0) {
+        newCart = newCart.filter((item) => item.id !== product.id);
+      }
+    } else if (delta > 0) {
+      newCart.push({ ...product, quantity: 1 });
     }
+
     setCart(newCart);
     localStorage.setItem("mission_cart", JSON.stringify(newCart));
+  };
+
+  const getProductQuantity = (id: string) => {
+    return cart.find((item) => item.id === id)?.quantity || 0;
   };
 
   if (loading) return (
@@ -70,7 +72,6 @@ export default function UserStore() {
   return (
     <main className="min-h-screen bg-black text-white pb-40 font-sans relative selection:bg-white/20">
       
-      {/* 🌑 DARK GLASS AMBIENCE */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-[-10%] right-[-5%] w-[50%] h-[50%] bg-zinc-800/10 blur-[120px] rounded-full" />
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-[0.03]" />
@@ -78,7 +79,6 @@ export default function UserStore() {
 
       <div className="relative z-10 max-w-6xl mx-auto px-6 pt-12">
         
-        {/* HEADER & TABS */}
         <header className="flex flex-col items-center mb-12">
           <div className="flex items-center gap-2 mb-4">
              <Flame size={20} className="text-zinc-600" />
@@ -88,7 +88,6 @@ export default function UserStore() {
             Supply Drop
           </h1>
           
-          {/* Glass Tab Switcher */}
           <div className="bg-white/[0.03] border border-white/10 p-1.5 rounded-2xl flex gap-1 backdrop-blur-3xl shadow-2xl">
             <button 
               onClick={() => setActiveTab("supply")}
@@ -110,7 +109,6 @@ export default function UserStore() {
         </header>
 
         <AnimatePresence mode="wait">
-          {/* 🛒 TAB 1: SHOP */}
           {activeTab === "supply" && (
             <motion.div 
               key="supply"
@@ -118,25 +116,42 @@ export default function UserStore() {
               className="grid grid-cols-2 md:grid-cols-4 gap-6"
             >
               {products.map((item) => {
-                const inCart = cart.some((p) => p.id === item.id);
+                const qty = getProductQuantity(item.id);
                 return (
-                  <div key={item.id} className="group bg-zinc-900/20 border border-white/5 rounded-[2.5rem] overflow-hidden backdrop-blur-md">
+                  <div key={item.id} className="group bg-zinc-900/20 border border-white/5 rounded-[2.5rem] overflow-hidden backdrop-blur-md flex flex-col">
                     <div className="aspect-square relative overflow-hidden bg-black/40">
-                      <img src={item.image_url} className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
+                      <img src={item.image_url} className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-all duration-700" />
                       <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
                         <span className="text-[10px] font-black text-white">${item.price}</span>
                       </div>
                     </div>
-                    <div className="p-5">
+                    <div className="p-5 flex-1 flex flex-col justify-between">
                       <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-300 mb-4 truncate">{item.name}</h3>
-                      <button 
-                        onClick={() => toggleCart(item)}
-                        className={`w-full py-3 rounded-xl font-black uppercase text-[9px] tracking-widest transition-all ${
-                          inCart ? "bg-white text-black" : "bg-white/5 text-zinc-500 hover:bg-white/10"
-                        }`}
-                      >
-                        {inCart ? "Acquired" : "Request"}
-                      </button>
+                      
+                      {qty === 0 ? (
+                        <button 
+                          onClick={() => updateQuantity(item, 1)}
+                          className="w-full py-3 rounded-xl font-black uppercase text-[9px] tracking-widest bg-white/5 text-zinc-500 hover:bg-white/10 hover:text-white transition-all flex items-center justify-center gap-2"
+                        >
+                          <Plus size={12} /> Request
+                        </button>
+                      ) : (
+                        <div className="flex items-center justify-between bg-white text-black rounded-xl p-1">
+                          <button 
+                            onClick={() => updateQuantity(item, -1)}
+                            className="w-8 h-8 flex items-center justify-center hover:bg-black/10 rounded-lg transition-colors"
+                          >
+                            <Minus size={14} />
+                          </button>
+                          <span className="font-black text-xs">{qty}</span>
+                          <button 
+                            onClick={() => updateQuantity(item, 1)}
+                            className="w-8 h-8 flex items-center justify-center hover:bg-black/10 rounded-lg transition-colors"
+                          >
+                            <Plus size={14} />
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -144,7 +159,6 @@ export default function UserStore() {
             </motion.div>
           )}
 
-          {/* 🎒 TAB 2: ARSENAL */}
           {activeTab === "arsenal" && (
             <motion.div 
               key="arsenal"
@@ -152,8 +166,8 @@ export default function UserStore() {
               className="grid grid-cols-2 md:grid-cols-4 gap-6"
             >
               {inventory.length > 0 ? (
-                inventory.map((item) => (
-                  <div key={item.id} className="bg-white/[0.03] border border-white/10 rounded-[2.5rem] p-5 flex flex-col items-center text-center">
+                inventory.map((item, idx) => (
+                  <div key={`${item.id}-${idx}`} className="bg-white/[0.03] border border-white/10 rounded-[2.5rem] p-5 flex flex-col items-center text-center">
                     <div className="w-24 h-24 mb-4 relative">
                       <img src={item.product?.image_url} className="w-full h-full object-cover rounded-2xl grayscale opacity-50" />
                       <div className="absolute -top-2 -right-2 bg-black border border-white/20 p-1.5 rounded-full">
@@ -175,7 +189,6 @@ export default function UserStore() {
         </AnimatePresence>
       </div>
 
-      {/* 🚀 CHECKOUT BAR (Hides Bottom Nav) */}
       <AnimatePresence>
         {cart.length > 0 && (
           <motion.div 
@@ -184,11 +197,15 @@ export default function UserStore() {
           >
             <div className="max-w-6xl mx-auto flex items-center justify-between">
               <div>
-                <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-1">Total Requisition</p>
-                <p className="text-3xl font-black italic">${cart.reduce((sum, item) => sum + item.price, 0)}</p>
+                <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-1">
+                   Total Requisition ({cart.reduce((s, i) => s + i.quantity, 0)} items)
+                </p>
+                <p className="text-3xl font-black italic">
+                  ${cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)}
+                </p>
               </div>
               <Link 
-                href="/checkout" 
+                href="store/checkout" 
                 className="bg-white text-black px-10 py-4 rounded-2xl font-black uppercase text-xs tracking-widest flex items-center gap-2 active:scale-95 transition-transform"
               >
                 Authorize <ArrowRight size={16} />

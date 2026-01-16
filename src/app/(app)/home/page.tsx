@@ -13,27 +13,25 @@ export default function HomePage() {
   const [backroomGirls, setBackroomGirls] = useState<any[]>([]);
   const [isVip, setIsVip] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [processingPayment, setProcessingPayment] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        // 1. Get User and verify Tier from the 'tier' column
         const { data: { user } } = await supabase.auth.getUser();
         
         if (user) {
           const { data: profile } = await supabase
             .from("profiles")
-            .select("tier") // Updated to match your new column name
+            .select("tier")
             .eq("id", user.id)
             .single();
           
-          // Logic: Both VYBE and Admin gain Backroom access
           if (profile?.tier === "VYBE" || profile?.tier === "Admin") {
             setIsVip(true);
           }
         }
 
-        // 2. Fetch all personnel
         const { data, error } = await supabase
           .from("discovery")
           .select("*")
@@ -48,12 +46,49 @@ export default function HomePage() {
       } catch (err) {
         console.error("Fetch Error:", err);
       } finally {
-        // Keeps the sleek scanning animation for 1.8s
         setTimeout(() => setLoading(false), 1800); 
       }
     }
     fetchData();
   }, []);
+
+  // --- INTEGRATED PAYMENT CREATION LOGIC ---
+  const handleDirectCheckout = async (talentId: string) => {
+    setProcessingPayment(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        router.push("/auth/login");
+        return;
+      }
+
+      // We call our new unified payment route
+      const res = await fetch("/api/payment/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.id,
+          talentId: talentId, // This triggers the CHAT_UNLOCK logic in the API/Webhook
+          amount: 50.00,      // Your standard chat unlock price
+        }),
+      });
+
+      const paymentData = await res.json();
+
+      if (paymentData.invoice_url) {
+        // Redirect user to the NowPayments BTC portal
+        window.location.href = paymentData.invoice_url;
+      } else {
+        throw new Error(paymentData.error || "Payment link generation failed");
+      }
+    } catch (err: any) {
+      console.error("Payment Error:", err);
+      alert(`SECURE LINE ERROR: ${err.message || "Please check your connection."}`);
+    } finally {
+      setProcessingPayment(false);
+    }
+  };
 
   if (loading)
     return (
@@ -62,18 +97,13 @@ export default function HomePage() {
           <div className="relative w-16 h-16 flex items-center justify-center">
             <div className="absolute inset-0 border border-zinc-800 rounded-2xl"></div>
             <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-red-600/20 to-transparent animate-scan-y"></div>
-            
             <svg viewBox="0 0 24 24" fill="none" className="w-8 h-8 text-red-600 drop-shadow-[0_0_8px_rgba(220,38,38,0.8)]">
               <path d="M5 3H3v2M19 3h2v2M5 21H3v-2M19 21h2v-2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
               <circle cx="12" cy="12" r="1" fill="currentColor" />
             </svg>
           </div>
-
-          <p className="mt-4 text-[8px] font-black uppercase tracking-[0.5em] text-red-600 animate-pulse">
-                 Vybing...
-          </p>
+          <p className="mt-4 text-[8px] font-black uppercase tracking-[0.5em] text-red-600 animate-pulse">Vybing...</p>
         </div>
-
         <style jsx>{`
           @keyframes scan-y {
             0% { transform: translateY(-20%); opacity: 0; }
@@ -87,6 +117,14 @@ export default function HomePage() {
 
   return (
     <main className="bg-black min-h-screen text-white p-4 pb-32">
+      {/* Loading Overlay for Payments */}
+      {processingPayment && (
+        <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-md flex flex-col items-center justify-center">
+          <Loader2 className="text-red-600 animate-spin mb-4" size={32} />
+          <p className="text-[10px] font-black uppercase tracking-widest text-red-600 italic">Initializing Secure Payment...</p>
+        </div>
+      )}
+
       <header className="py-6 flex justify-between items-center max-w-[320px] mx-auto">
         <h1 className="text-2xl font-black italic uppercase tracking-tighter">VYBE</h1>
         {isVip && <Crown size={18} className="text-red-600 animate-pulse" />}
@@ -123,7 +161,7 @@ export default function HomePage() {
             {publicGirls.length === 0 ? (
               <div className="text-center py-20 opacity-20 text-[9px] uppercase tracking-[0.4em]">Signal Lost...</div>
             ) : (
-              <HomeGrid girls={publicGirls} />
+              <HomeGrid girls={publicGirls} onAction={handleDirectCheckout} />
             )}
           </section>
         ) : (
@@ -132,7 +170,7 @@ export default function HomePage() {
               backroomGirls.length === 0 ? (
                 <div className="text-center py-20 opacity-20 text-[9px] uppercase tracking-[0.4em]">Backroom Secure</div>
               ) : (
-                <HomeGrid girls={backroomGirls} />
+                <HomeGrid girls={backroomGirls} onAction={handleDirectCheckout} />
               )
             ) : (
               /* ACCESS DENIED VIEW */

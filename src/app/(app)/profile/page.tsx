@@ -24,7 +24,6 @@ export default function ProfilePage() {
     nickname: "",
   });
 
-  // Fetch Profile Data
   useEffect(() => {
     async function fetchProfile() {
       try {
@@ -57,8 +56,8 @@ export default function ProfilePage() {
   return (
     <main className="min-h-screen bg-black text-white relative overflow-hidden font-sans selection:bg-white/20">
       
-      {/* 🌑 BACKGROUND AMBIENCE (Neutral/Dark) */}
-      <div className="fixed inset-0 pointer-events-none">
+      {/* 🌑 BACKGROUND AMBIENCE */}
+      <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-zinc-800/10 blur-[120px] rounded-full" />
         <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-zinc-900/10 blur-[120px] rounded-full" />
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-[0.03]" />
@@ -74,21 +73,18 @@ export default function ProfilePage() {
         {/* ─── HEADER SECTION ─── */}
         <header className="flex items-center justify-between mb-16">
           <div className="flex items-center gap-5">
-            {/* Logo / Avatar Sigil */}
             <div className="relative">
               <div className="w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-md flex items-center justify-center shadow-2xl">
                 <div className="relative">
-                  <Flame size={28} className="text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]" fill="currentColor" />
+                  <Flame size={28} className="text-white" fill="currentColor" />
                   <Zap size={14} className="text-black absolute -bottom-1 -right-1 fill-white stroke-white" />
                 </div>
               </div>
-              {/* Online Indicator */}
               <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-black border border-white/10 flex items-center justify-center">
-                <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse shadow-[0_0_5px_white]" />
+                <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
               </div>
             </div>
 
-            {/* Identity Text */}
             <div className="flex flex-col">
               <span className="text-[9px] font-bold tracking-[0.4em] text-zinc-500 uppercase mb-1">
                 Verified ID
@@ -99,7 +95,6 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Settings Button */}
           <button 
             onClick={() => router.push("/settings")}
             className="w-12 h-12 flex items-center justify-center rounded-full bg-white/[0.03] border border-white/10 hover:bg-white/[0.08] transition-all active:scale-95"
@@ -113,20 +108,22 @@ export default function ProfilePage() {
         <div className="space-y-8">
           
           {/* 1. Membership Card */}
-          <section>
+          <section className="relative z-20"> {/* Higher Z-Index to ensure clickability */}
             <div className="flex items-center justify-between mb-4 px-2">
               <h2 className="text-[10px] font-black uppercase tracking-widest text-zinc-600">
                 Membership Status
               </h2>
             </div>
+            
             <motion.div 
               whileHover={{ scale: 1.01 }}
-              transition={{ duration: 0.3 }}
-              className="bg-zinc-900/20 border border-white/5 rounded-[2rem] p-1 backdrop-blur-xl overflow-hidden relative group"
+              whileTap={{ scale: 0.99 }} // Feedback when clicking the card area
+              className="bg-zinc-900/20 border border-white/5 rounded-[2rem] p-1 backdrop-blur-xl overflow-hidden relative group cursor-pointer"
             >
-              {/* Subtle sheen effect */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              {/* Note: Ensure the button inside MembershipCard handles the onClick={onUpgrade} */}
               <MembershipCard onUpgrade={() => router.push("/membership/upgrade")} />
+              
+              <div className="absolute inset-0 bg-gradient-to-tr from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
             </motion.div>
           </section>
 
@@ -144,12 +141,8 @@ export default function ProfilePage() {
               </button>
             </div>
             
-            <motion.div 
-              className="bg-zinc-900/20 border border-white/5 rounded-[2rem] min-h-[160px] p-2 backdrop-blur-xl relative overflow-hidden"
-            >
+            <motion.div className="bg-zinc-900/20 border border-white/5 rounded-[2rem] min-h-[160px] p-2 backdrop-blur-xl relative overflow-hidden">
               <ActivityCard onViewHistory={() => router.push("/profile/history")} />
-              
-              {/* Decorative Icon Background */}
               <div className="absolute top-4 right-4 text-white/[0.02] pointer-events-none">
                 <Activity size={80} />
               </div>

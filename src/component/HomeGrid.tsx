@@ -9,7 +9,7 @@ import {
   Lock 
 } from "lucide-react";
 
-export default function HomeGrid({ girls }: { girls: any[] }) {
+export default function HomeGrid({ girls, onAction }: { girls: any[]; onAction: (id: string) => void }) {
   const router = useRouter();
   
   // -- STATE MANAGEMENT --
