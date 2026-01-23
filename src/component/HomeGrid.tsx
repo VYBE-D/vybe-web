@@ -58,7 +58,7 @@ export default function HomeGrid({ girls, onAction }: { girls: any[]; onAction: 
       const grandTotal = Number(selected.price) || 0;
 
       // Send to Payment API
-      const response = await fetch("/api/payments/create", {
+      const response = await fetch("/api/payment/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
