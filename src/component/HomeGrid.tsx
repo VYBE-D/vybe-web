@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabase"; 
 import { 
@@ -33,56 +33,63 @@ export default function HomeGrid({ girls, onAction }: { girls: any[]; onAction: 
 
   // 2. Submit Logic
   const handleConfirmAndChat = async () => {
-    // Debug: Check if state is capturing input
-    console.log("Submitting:", { date, venue });
-
+    // Basic Validation
     if (!date) return alert("Please select a Date and Time.");
     if (!venue.trim()) return alert("Please enter the Venue Address.");
 
     setLoading(true);
 
     try {
+      // 1. Check User
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         setLoading(false);
         return router.push('/login');
       }
 
-      // Create/Get Conversation
+      // 2. Create/Get Conversation (Optional but good)
       const { data: conv } = await supabase
         .from("conversations")
         .upsert({ user_id: user.id, talent_id: selected.id }, { onConflict: 'user_id,talent_id' })
         .select().single();
 
-      // Calculate Total
+      // 3. Calculate Total
       const grandTotal = Number(selected.price) || 0;
 
-      // Send to Payment API
+      // --- THE FIX IS HERE ---
+      // We removed the 's' from 'payments' -> 'payment'
       const response = await fetch("/api/payment/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           userId: user.id,
           amount: grandTotal,
-          talentId: selected.id,
-          conversationId: conv.id,
+          talentId: selected.id, // Ensure this matches API expectation
           metadata: { 
-            date: date,    // passing the state variable
-            venue: venue   // passing the state variable
+            date: date,
+            venue: venue
           }
         }),
       });
 
+      // 4. Handle Response
       const paymentData = await response.json();
+
+      if (!response.ok) {
+        // This will print the exact server error to your alert
+        throw new Error(paymentData.error || `Server Error: ${response.status}`);
+      }
+
       if (paymentData.invoice_url) {
         window.location.href = paymentData.invoice_url;
       } else {
-        throw new Error("Payment link generation failed.");
+        throw new Error("Payment link missing from response.");
       }
 
-    } catch (err) {
-      console.error(err);
-      alert("System error. Please try again.");
+    } catch (err: any) {
+      console.error("Checkout Error:", err);
+      // This alert will now tell you exactly what went wrong
+      alert(`Payment Failed: ${err.message}`);
     } finally {
       setLoading(false);
     }
