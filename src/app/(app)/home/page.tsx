@@ -161,7 +161,7 @@ export default function HomePage() {
             {publicGirls.length === 0 ? (
               <div className="text-center py-20 opacity-20 text-[9px] uppercase tracking-[0.4em]">Signal Lost...</div>
             ) : (
-              <HomeGrid girls={publicGirls} onAction={handleDirectCheckout} />
+              <HomeGrid girls={publicGirls}  />
             )}
           </section>
         ) : (
@@ -170,7 +170,7 @@ export default function HomePage() {
               backroomGirls.length === 0 ? (
                 <div className="text-center py-20 opacity-20 text-[9px] uppercase tracking-[0.4em]">Backroom Secure</div>
               ) : (
-                <HomeGrid girls={backroomGirls} onAction={handleDirectCheckout} />
+                <HomeGrid girls={backroomGirls}  />
               )
             ) : (
               /* ACCESS DENIED VIEW */
