@@ -4,92 +4,65 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabase"; 
 import { 
-  X, Info, Calendar, MapPin, 
-  ArrowRight, Loader2, ChevronDown, 
-  Lock 
+  X, Calendar, MapPin, 
+  ArrowRight, Loader2, 
+  Clock, Sparkles, ShieldCheck,
+  MessageSquare
 } from "lucide-react";
 
-export default function HomeGrid({ girls, onAction }: { girls: any[]; onAction: (id: string) => void }) {
+export default function HomeGrid({ girls }: { girls: any[] }) {
   const router = useRouter();
   
-  // -- STATE MANAGEMENT --
   const [selected, setSelected] = useState<any>(null);
   const [mode, setMode] = useState<"view" | "book">("view"); 
   const [loading, setLoading] = useState(false);
   
-  // These control the inputs directly
   const [date, setDate] = useState("");
   const [venue, setVenue] = useState("");
+  const [duration, setDuration] = useState<number>(1);
 
-  // -- HANDLERS --
+  const basePrice = Number(selected?.price) || 0;
+  const finalPrice = duration === 8 ? basePrice * 6 : basePrice * duration;
 
-  // 1. Open Profile & Reset Form
   const openProfile = (girl: any) => {
     setSelected(girl);
     setMode("view");
-    setDate("");  // Reset date so it's fresh
-    setVenue(""); // Reset venue so it's fresh
+    setDate("");
+    setVenue("");
+    setDuration(1);
   };
 
-  // 2. Submit Logic
-  const handleConfirmAndChat = async () => {
-    // Basic Validation
-    if (!date) return alert("Please select a Date and Time.");
-    if (!venue.trim()) return alert("Please enter the Venue Address.");
-
+  const handleBookAndChat = async () => {
+    if (!date || !venue.trim()) return alert("Please add a date and location.");
     setLoading(true);
-
     try {
-      // 1. Check User
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setLoading(false);
-        return router.push('/login');
-      }
-
-      // 2. Create/Get Conversation (Optional but good)
-      const { data: conv } = await supabase
-        .from("conversations")
-        .upsert({ user_id: user.id, talent_id: selected.id }, { onConflict: 'user_id,talent_id' })
-        .select().single();
-
-      // 3. Calculate Total
-      const grandTotal = Number(selected.price) || 0;
-
-      // --- THE FIX IS HERE ---
-      // We removed the 's' from 'payments' -> 'payment'
+      if (!user) return router.push('/login');
+      
+      // Pre-create conversation record
+      await supabase.from("conversations").upsert({ 
+        user_id: user.id, 
+        talent_id: selected.id 
+      }, { onConflict: 'user_id,talent_id' });
+      
       const response = await fetch("/api/payment/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
-          userId: user.id,
-          amount: grandTotal,
-          talentId: selected.id, // Ensure this matches API expectation
-          metadata: { 
-            date: date,
-            venue: venue
-          }
+          userId: user.id, 
+          talentId: selected.id, 
+          amount: finalPrice, 
+          metadata: { date, venue, duration_hours: duration } 
         }),
       });
-
-      // 4. Handle Response
-      const paymentData = await response.json();
-
-      if (!response.ok) {
-        // This will print the exact server error to your alert
-        throw new Error(paymentData.error || `Server Error: ${response.status}`);
+      
+      const data = await response.json();
+      if (data.invoice_url) {
+        // AUTOMATIC REDIRECT TO PAYMENT
+        window.location.href = data.invoice_url;
       }
-
-      if (paymentData.invoice_url) {
-        window.location.href = paymentData.invoice_url;
-      } else {
-        throw new Error("Payment link missing from response.");
-      }
-
-    } catch (err: any) {
-      console.error("Checkout Error:", err);
-      // This alert will now tell you exactly what went wrong
-      alert(`Payment Failed: ${err.message}`);
+    } catch (err) {
+      alert("System could not generate secure link. Try again.");
     } finally {
       setLoading(false);
     }
@@ -97,161 +70,171 @@ export default function HomeGrid({ girls, onAction }: { girls: any[]; onAction: 
 
   return (
     <>
-      {/* 1. DISCOVERY GRID */}
-      <div className="grid grid-cols-2 gap-4 max-w-4xl mx-auto px-4 pb-20">
+      {/* 1. MAIN DISCOVERY FEED */}
+      <div className="grid grid-cols-2 gap-3 max-w-4xl mx-auto px-3 pb-32">
         {girls.map((girl) => (
           <div 
             key={girl.id} 
             onClick={() => openProfile(girl)} 
-            className="group relative aspect-[3/4] rounded-[2.5rem] overflow-hidden border border-white/5 cursor-pointer active:scale-95 transition-all duration-500 shadow-2xl"
+            className="relative aspect-[2/3] rounded-3xl overflow-hidden cursor-pointer active:scale-[0.98] transition-all bg-zinc-900 border border-white/5"
           >
-            <img 
-              src={girl.image_url} 
-              className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition duration-700" 
-              alt={girl.name} 
-            />
-            
-            <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black via-black/70 to-transparent">
-              <p className="text-[7px] font-black text-red-600 tracking-[0.3em] uppercase mb-1 opacity-90">
-                {girl.category || "New Face"}
-              </p>
-              <p className="font-black italic uppercase text-xl text-white leading-none">{girl.name}</p>
-              <p className="text-[8px] font-bold text-zinc-400 tracking-widest uppercase mt-2">
-                {girl.role || "Elite Personnel"}
-              </p>
+            <img src={girl.image_url} className="w-full h-full object-cover opacity-90" alt={girl.name} />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent" />
+            <div className="absolute bottom-4 left-4">
+              <p className="text-zinc-100 font-bold text-xl tracking-tight">{girl.name}</p>
+              <p className="text-zinc-500 text-[9px] font-black tracking-widest uppercase">${girl.price}/hr</p>
             </div>
           </div>
         ))}
       </div>
 
-      {/* 2. PROFILE & CHECKOUT MODAL */}
+      {/* 2. PROFILE & BOOKING MODAL */}
       {selected && (
-        <div className="fixed inset-0 z-[100] bg-black overflow-y-auto animate-in slide-in-from-bottom duration-500">
+        <div className="fixed inset-0 z-[100] bg-[#0a0a0a] overflow-y-auto no-scrollbar animate-in slide-in-from-bottom duration-500">
           
-          {/* Sticky Header */}
-          <div className="sticky top-0 z-[110] p-6 flex justify-between items-center bg-gradient-to-b from-black to-transparent">
-             <button 
-                onClick={() => setSelected(null)} 
-                className="bg-black/50 backdrop-blur-md p-3 rounded-full text-white border border-white/10 shadow-2xl hover:bg-red-600 transition-colors"
-             >
-                <X size={24} />
-             </button>
-             <h2 className="text-xs font-black uppercase tracking-[0.4em] text-white/40">{selected.category}</h2>
-             <div className="w-12"></div>
+          {/* Minimalist Header */}
+          <div className="sticky top-0 z-[110] px-6 py-4 flex justify-between items-center bg-[#0a0a0a]/90 backdrop-blur-xl">
+              <button onClick={() => setSelected(null)} className="p-2 -ml-2 text-zinc-400 hover:text-white transition-colors">
+                <X size={26} strokeWidth={1.5} />
+              </button>
+              {mode === "book" && (
+                <button onClick={() => setMode("view")} className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600">
+                  Exit Booking
+                </button>
+              )}
           </div>
 
-          <div className="flex flex-col w-full pb-40">
+          <div className="max-w-md mx-auto w-full">
             {mode === "view" ? (
-              <>
-                {/* --- VIEW MODE --- */}
-                <div className="w-full h-[85vh] relative px-4">
-                  <img src={selected.image_url} className="w-full h-full object-cover rounded-[3.5rem] shadow-2xl" />
-                  <div className="absolute bottom-12 left-10">
-                    <p className="text-red-600 font-black uppercase tracking-[0.4em] text-[10px] mb-2 drop-shadow-lg">
-                        {selected.category}
-                    </p>
-                    <h1 className="text-6xl font-black italic uppercase tracking-tighter text-white drop-shadow-2xl">
-                        {selected.name}
-                    </h1>
-                  </div>
-                  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 animate-bounce opacity-30">
-                    <ChevronDown size={32} className="text-white" />
-                  </div>
+              /* --- EDITORIAL PROFILE VIEW --- */
+              <div className="px-4 space-y-4 pb-48">
+                
+                {/* Hero Photo */}
+                <div className="relative h-[78vh] w-full overflow-hidden rounded-[2.5rem] border border-white/5 mt-2">
+                    <img src={selected.image_url} className="w-full h-full object-cover" />
+                    <div className="absolute bottom-10 left-8">
+                       <h1 className="text-5xl font-black italic uppercase tracking-tighter text-zinc-100">{selected.name}</h1>
+                       <div className="flex gap-2 mt-4">
+                         <span className="bg-white/5 backdrop-blur-md text-zinc-400 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/5">
+                           {selected.category}
+                         </span>
+                       </div>
+                    </div>
                 </div>
 
-                <div className="p-6">
-                   <div className="bg-zinc-900/50 border border-white/5 p-8 rounded-[3rem] backdrop-blur-sm">
-                      <div className="flex items-center gap-2 text-red-600 mb-4">
-                         <Info size={18} /><span className="text-[10px] font-black uppercase tracking-widest text-white">Advanced Intel</span>
-                      </div>
-                      <p className="text-xl text-zinc-300 italic leading-relaxed font-medium">"{selected.bio}"</p>
-                   </div>
+                {/* Vertical Prompt Card */}
+                <div className="bg-zinc-900/30 p-10 rounded-[2.5rem] border border-white/5">
+                   <p className="text-zinc-600 text-[10px] font-black uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
+                     <Sparkles size={14} /> The Vibe
+                   </p>
+                   <p className="text-2xl font-medium text-zinc-200 leading-tight italic">
+                     "{selected.bio}"
+                   </p>
                 </div>
 
-                {selected.gallery?.slice(1).map((img: string, idx: number) => (
-                  <div key={idx} className="w-full h-[85vh] px-4 mb-6">
-                    <img src={img} className="w-full h-full object-cover rounded-[3.5rem] border border-white/5 shadow-2xl" />
+                {/* Vertical Gallery Stack */}
+                {selected.gallery?.map((img: string, i: number) => (
+                  <div key={i} className="h-[78vh] w-full overflow-hidden rounded-[2.5rem] border border-white/5">
+                    <img src={img} className="w-full h-full object-cover" />
                   </div>
                 ))}
 
-                <div className="fixed bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black via-black/90 to-transparent z-[120]">
+                {/* Floating Bottom Button */}
+                <div className="fixed bottom-8 left-0 right-0 px-6 z-[120]">
                   <button 
-                    onClick={() => { setMode("book"); window.scrollTo(0,0); }} 
-                    className="w-full bg-white text-black py-6 rounded-full font-black uppercase tracking-[0.2em] shadow-2xl active:scale-95 transition-all"
+                    onClick={() => setMode("book")} 
+                    className="w-full bg-white text-black h-16 rounded-full font-black uppercase tracking-widest shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-3"
                   >
-                    Initiate Deployment
+                    Start Booking <ArrowRight size={18} />
                   </button>
                 </div>
-              </>
+              </div>
             ) : (
-              /* --- CHECKOUT MODE --- */
-              <div className="p-6 space-y-6 pt-10 max-w-md mx-auto w-full">
-                <div className="text-center space-y-2 mb-8">
-                    <h3 className="text-3xl font-black italic uppercase text-red-600">Secure Checkout</h3>
-                    <p className="text-[10px] font-bold text-zinc-500 tracking-[0.3em] uppercase">Talent: {selected.name}</p>
+              /* --- CLEAN BOOKING FLOW --- */
+              <div className="px-6 pt-10 animate-in fade-in duration-300">
+                <div className="mb-12">
+                    <h3 className="text-4xl font-black italic uppercase text-zinc-100">Details</h3>
+                    <p className="text-zinc-500 text-sm mt-1 uppercase tracking-widest font-bold text-[10px]">Prepare for deployment</p>
                 </div>
                 
-                <div className="bg-zinc-900/80 p-7 rounded-[3.5rem] border border-white/10 space-y-6 backdrop-blur-xl">
-                    {/* Date Input */}
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 flex items-center gap-2">
-                        <Calendar size={12}/> Date and Time
-                      </label>
-                      <input 
-                        type="datetime-local" 
-                        value={date}
-                        onChange={(e) => setDate(e.target.value)}
-                        className="w-full bg-black border border-white/10 p-5 rounded-2xl outline-none invert text-white font-bold" 
-                      />
-                    </div>
+                {/* Scroll buffer to prevent keyboard/button blocking */}
+                <div className="space-y-12 pb-[550px]"> 
+                    <div className="space-y-10">
+                        {/* Duration Selection */}
+                        <div className="space-y-4">
+                            <label className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.2em] flex items-center gap-2">
+                              <Clock size={14}/> Duration
+                            </label>
+                            <div className="grid grid-cols-4 gap-2">
+                                {[1, 2, 3, 8].map((h) => (
+                                    <button 
+                                      key={h} 
+                                      onClick={() => setDuration(h)} 
+                                      className={`py-4 rounded-2xl text-xs font-black border transition-all ${
+                                        duration === h ? "bg-white text-black border-white" : "bg-zinc-900 text-zinc-600 border-white/5"
+                                      }`}
+                                    >
+                                        {h === 8 ? "ALL NIGHT" : `${h}H`}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
 
-                    {/* Venue Input */}
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 flex items-center gap-2">
-                        <MapPin size={12}/> Venue Address
-                      </label>
-                      <input 
-                        type="text" 
-                        value={venue}
-                        onChange={(e) => setVenue(e.target.value)}
-                        placeholder="Street, Suite, City..." 
-                        className="w-full bg-black border border-white/10 p-5 rounded-2xl outline-none text-white font-bold placeholder:text-zinc-700" 
-                      />
+                        {/* Date Input */}
+                        <div className="space-y-4">
+                            <label className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.2em] flex items-center gap-2">
+                              <Calendar size={14}/> When?
+                            </label>
+                            <input 
+                              type="datetime-local" 
+                              value={date} 
+                              onChange={(e) => setDate(e.target.value)} 
+                              className="w-full bg-zinc-900 border border-white/5 p-5 rounded-2xl outline-none text-zinc-100 font-bold focus:border-zinc-700 transition-all color-scheme-dark" 
+                            />
+                        </div>
+
+                        {/* Venue Input */}
+                        <div className="space-y-4">
+                            <label className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.2em] flex items-center gap-2">
+                              <MapPin size={14}/> Venue Address
+                            </label>
+                            <input 
+                              type="text" 
+                              value={venue} 
+                              onChange={(e) => setVenue(e.target.value)} 
+                              placeholder="Where are we meeting?" 
+                              className="w-full bg-zinc-900 border border-white/5 p-5 rounded-2xl outline-none text-zinc-100 font-bold placeholder:text-zinc-800 focus:border-zinc-700 transition-all" 
+                            />
+                        </div>
                     </div>
                 </div>
 
-                <div className="flex flex-col gap-4">
-                    {/* Price Summary */}
-                    <div className="p-8 bg-zinc-900 rounded-[3rem] border border-red-600/30 flex justify-between items-center shadow-2xl">
+                {/* Checkout Bar */}
+                <div className="fixed bottom-0 left-0 right-0 p-6 bg-[#0a0a0a] border-t border-white/5 z-[130]">
+                    <div className="flex justify-between items-end mb-6 px-2">
                         <div>
-                            <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Deployment Fee</p>
-                            <p className="text-4xl font-black italic text-white">
-                                ${selected.price || '0'}
-                            </p>
+                          <p className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-1">Total Due</p>
+                          <span className="text-3xl font-black italic text-zinc-100">${finalPrice}</span>
                         </div>
-                        <div className="bg-red-600/10 p-4 rounded-2xl">
-                           <Lock className="text-red-600" size={24} />
+                        <div className="text-right">
+                          <div className="flex items-center gap-1.5 text-zinc-500 mb-1">
+                             <ShieldCheck size={12} className="text-green-500" />
+                             <span className="text-[9px] font-black uppercase tracking-widest">Secured</span>
+                          </div>
+                          <p className="text-[8px] font-medium text-zinc-700 uppercase tracking-tighter">Redirecting to Payment Gateway</p>
                         </div>
                     </div>
 
-                    {/* Submit Button */}
                     <button 
-                      onClick={handleConfirmAndChat} 
+                      onClick={handleBookAndChat} 
                       disabled={loading} 
-                      className="w-full bg-red-600 py-6 rounded-full font-black uppercase tracking-widest flex items-center justify-center gap-3 text-white shadow-[0_0_50px_rgba(220,38,38,0.3)] active:scale-95 transition-all"
+                      className="w-full bg-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-black shadow-[0_0_40px_rgba(255,255,255,0.1)] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                     >
                       {loading ? (
-                        <Loader2 className="animate-spin" size={24}/>
+                        <Loader2 className="animate-spin" size={20}/>
                       ) : (
-                        <>Confirm & Chat <ArrowRight size={20}/></>
+                        <><MessageSquare size={18} /> Book & Chat</>
                       )}
-                    </button>
-                    
-                    <button 
-                      onClick={() => setMode("view")} 
-                      className="text-[10px] font-black text-zinc-600 uppercase tracking-widest hover:text-white transition-colors"
-                    >
-                        Back to Intel
                     </button>
                 </div>
               </div>
