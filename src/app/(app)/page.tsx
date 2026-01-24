@@ -24,7 +24,7 @@ export default function HomePage() {
           If you want to show featured girls here, you would fetch them 
           from Supabase just like you did in your other HomePage.
       */}
-      <HomeGrid girls={[]} onAction={handleAction} />
+      <HomeGrid girls={[]} />
       
       {/* Optional: Add a button to go to discovery if the grid is empty */}
       <div className="flex justify-center mt-10">
