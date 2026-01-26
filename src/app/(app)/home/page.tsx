@@ -21,17 +21,30 @@ export default function HomePage() {
         const { data: { user } } = await supabase.auth.getUser();
         
         if (user) {
+          // 1. CHECK SUPABASE AUTH METADATA
+          const metaRole = user?.user_metadata?.role?.toLowerCase();
+          const metaTier = user?.user_metadata?.tier?.toLowerCase();
+
+          // 2. CHECK PROFILES TABLE (The most reliable source)
           const { data: profile } = await supabase
             .from("profiles")
             .select("tier")
             .eq("id", user.id)
             .single();
           
-          if (profile?.tier === "VYBE" || profile?.tier === "Admin") {
+          const dbTier = profile?.tier?.toLowerCase();
+
+          // 3. ROBUST VIP LOGIC
+          // This checks for "admin", "shadow", or "vybe" in any field, case-insensitive.
+          const isAdmin = metaRole === 'admin' || dbTier === 'admin';
+          const isShadow = metaTier === 'shadow' || dbTier === 'shadow' || dbTier === 'vybe';
+
+          if (isAdmin || isShadow) {
             setIsVip(true);
           }
         }
 
+        // Fetching discovery data
         const { data, error } = await supabase
           .from("discovery")
           .select("*")
@@ -52,39 +65,30 @@ export default function HomePage() {
     fetchData();
   }, []);
 
-  // --- INTEGRATED PAYMENT CREATION LOGIC ---
   const handleDirectCheckout = async (talentId: string) => {
     setProcessingPayment(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        router.push("/auth/login");
-        return;
-      }
+      if (!user) { router.push("/auth/login"); return; }
 
-      // We call our new unified payment route
       const res = await fetch("/api/payment/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId: user.id,
-          talentId: talentId, // This triggers the CHAT_UNLOCK logic in the API/Webhook
-          amount: 50.00,      // Your standard chat unlock price
+          talentId: talentId, 
+          amount: 50.00,
         }),
       });
 
       const paymentData = await res.json();
-
       if (paymentData.invoice_url) {
-        // Redirect user to the NowPayments BTC portal
         window.location.href = paymentData.invoice_url;
       } else {
         throw new Error(paymentData.error || "Payment link generation failed");
       }
     } catch (err: any) {
-      console.error("Payment Error:", err);
-      alert(`SECURE LINE ERROR: ${err.message || "Please check your connection."}`);
+      alert(`SECURE LINE ERROR: ${err.message || "Check connection."}`);
     } finally {
       setProcessingPayment(false);
     }
@@ -97,7 +101,7 @@ export default function HomePage() {
           <div className="relative w-16 h-16 flex items-center justify-center">
             <div className="absolute inset-0 border border-zinc-800 rounded-2xl"></div>
             <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-red-600/20 to-transparent animate-scan-y"></div>
-            <svg viewBox="0 0 24 24" fill="none" className="w-8 h-8 text-red-600 drop-shadow-[0_0_8px_rgba(220,38,38,0.8)]">
+            <svg viewBox="0 0 24 24" fill="none" className="w-8 h-8 text-red-600">
               <path d="M5 3H3v2M19 3h2v2M5 21H3v-2M19 21h2v-2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
               <circle cx="12" cy="12" r="1" fill="currentColor" />
             </svg>
@@ -117,7 +121,6 @@ export default function HomePage() {
 
   return (
     <main className="bg-black min-h-screen text-white p-4 pb-32">
-      {/* Loading Overlay for Payments */}
       {processingPayment && (
         <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-md flex flex-col items-center justify-center">
           <Loader2 className="text-red-600 animate-spin mb-4" size={32} />
@@ -130,7 +133,6 @@ export default function HomePage() {
         {isVip && <Crown size={18} className="text-red-600 animate-pulse" />}
       </header>
 
-      {/* TABS */}
       <div className="flex justify-center mb-8">
         <div className="bg-zinc-900/80 p-1 rounded-2xl flex gap-1 border border-white/5 w-full max-w-[320px]">
           <button 
@@ -139,29 +141,26 @@ export default function HomePage() {
                 activeTab === "public" ? "bg-white text-black shadow-lg" : "text-zinc-500"
             }`}
           >
-            <Globe size={12} />
-            Public
+            <Globe size={12} /> Public
           </button>
           <button 
             onClick={() => setActiveTab("backroom")}
             className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
-                activeTab === "backroom" ? "bg-red-600 text-white shadow-[0_0_15px_rgba(220,38,38,0.4)]" : "text-zinc-500"
+                activeTab === "backroom" ? "bg-red-600 text-white" : "text-zinc-500"
             }`}
           >
-            {isVip ? <ShieldCheck size={12} /> : <Lock size={12} />}
-            Backroom
+            {isVip ? <ShieldCheck size={12} /> : <Lock size={12} />} Backroom
           </button>
         </div>
       </div>
 
-      {/* CONTENT AREA */}
       <div className="max-w-md mx-auto">
         {activeTab === "public" ? (
           <section>
             {publicGirls.length === 0 ? (
               <div className="text-center py-20 opacity-20 text-[9px] uppercase tracking-[0.4em]">Signal Lost...</div>
             ) : (
-              <HomeGrid girls={publicGirls}  />
+              <HomeGrid girls={publicGirls} />
             )}
           </section>
         ) : (
@@ -170,22 +169,21 @@ export default function HomePage() {
               backroomGirls.length === 0 ? (
                 <div className="text-center py-20 opacity-20 text-[9px] uppercase tracking-[0.4em]">Backroom Secure</div>
               ) : (
-                <HomeGrid girls={backroomGirls}  />
+                <HomeGrid girls={backroomGirls} />
               )
             ) : (
               /* ACCESS DENIED VIEW */
               <div className="mt-4 flex flex-col items-center justify-center text-center p-10 border border-white/5 bg-zinc-900/20 rounded-[3.5rem] backdrop-blur-sm">
-                <div className="w-16 h-16 rounded-full bg-zinc-900 border border-red-600/30 flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(220,38,38,0.1)]">
+                <div className="w-16 h-16 rounded-full bg-zinc-900 border border-red-600/30 flex items-center justify-center mb-6">
                   <Lock size={24} className="text-red-600" />
                 </div>
                 <h3 className="text-xl font-black uppercase italic tracking-tighter mb-2">Access Restricted</h3>
-                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.2em] leading-relaxed mb-8">
-                  This archive requires <br/> 
-                  <span className="text-red-600">VYBE Authority</span>
+                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.2em] mb-8">
+                  This archive requires <br/> <span className="text-red-600">VYBE Authority</span>
                 </p>
                 <button 
                   onClick={() => router.push('/membership/upgrade')}
-                  className="bg-white text-black text-[9px] font-black uppercase px-10 py-5 rounded-full tracking-[0.3em] active:scale-95 transition-all hover:bg-red-600 hover:text-white"
+                  className="bg-white text-black text-[9px] font-black uppercase px-10 py-5 rounded-full tracking-[0.3em]"
                 >
                   Elevate Clearance
                 </button>

@@ -88,12 +88,10 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      // FIX: Using getSession instead of getUser to avoid net::ERR_CONNECTION_CLOSED
       const { data: { session } } = await supabase.auth.getSession();
       const user = session?.user;
 
       if (!user) {
-        // Fallback if session is null
         const { data: { user: retryUser } } = await supabase.auth.getUser();
         if (!retryUser) throw new Error("Authentication failed. Please refresh.");
         var finalUser = retryUser;
@@ -103,7 +101,6 @@ export default function SignupPage() {
 
       const photoUrls = await uploadPhotos(finalUser.id);
 
-      // Save to database
       const { error } = await supabase.from("profiles").upsert({
         id: finalUser.id,
         nickname: form.nickname,
@@ -187,7 +184,7 @@ export default function SignupPage() {
         {step === "age" && (
           <>
             <h1 className="text-xl font-bold mb-4">Age Confirmation</h1>
-            <label className="flex gap-2 text-sm">
+            <label className="flex gap-2 text-sm mb-4">
               <input type="checkbox" onChange={(e) =>
                 setForm({ ...form, ageConfirmed: e.target.checked })}
               />
@@ -253,6 +250,12 @@ export default function SignupPage() {
         {step === "done" && (
           <>
             <h1 className="text-2xl font-bold mb-4">You’re in 🔥</h1>
+            
+            <p className="text-gray-300 text-sm mb-6 leading-relaxed">
+              VYBE is free to signup and use. You can create an account instantly and satrt exploring. 
+              But dont get it twisted - new accounts are under review manual. Any suspicious activity = instant block
+            </p>
+
             <Tap label={loading ? "Finishing..." : "Go to Home"} onClick={finishSignup} />
           </>
         )}
