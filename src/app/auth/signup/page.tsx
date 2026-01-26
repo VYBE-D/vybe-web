@@ -252,8 +252,9 @@ export default function SignupPage() {
             <h1 className="text-2xl font-bold mb-4">You’re in 🔥</h1>
             
             <p className="text-gray-300 text-sm mb-6 leading-relaxed">
-              VYBE is free to signup and use. You can create an account instantly and satrt exploring. 
-              But dont get it twisted - new accounts are under review manual. Any suspicious activity = instant block
+              📧 Check your email
+                 We’ve sent you a secure link to continue.
+                 Open your email and (supabase) to tap the link to access Vybe.
             </p>
 
             <Tap label={loading ? "Finishing..." : "Go to Home"} onClick={finishSignup} />
