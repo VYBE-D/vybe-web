@@ -12,7 +12,7 @@ export default function AuthCallback() {
       const { data } = await supabase.auth.getSession();
 
       if (data.session) {
-        router.push("/dashboard"); // or /pending
+        router.push("/home"); // or /pending
       }
     };
 
