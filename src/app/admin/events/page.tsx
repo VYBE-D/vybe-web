@@ -106,7 +106,7 @@ export default function AdminEventSetup() {
             />
             <input 
               type="text" 
-              defaultValue="clearance@vybe.club"
+              defaultValue="clearance@vybeclub.fun"
               placeholder="Clearance Email" 
               className="w-full bg-zinc-900/50 border border-red-900/30 p-4 text-xs text-red-400 outline-none rounded-xl"
               onChange={(e) => setFormData({...formData, clearance_email: e.target.value})}
