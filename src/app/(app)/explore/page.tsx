@@ -66,7 +66,7 @@ export default function EventView() {
   const title = event.title || "CLASSIFIED GATHERING";
   const tagline = event.tagline || "Signals Detected. Location Unknown.";
   const description = event.description || "High-fidelity sound. Private personnel. Entry restricted.";
-  const email = event.clearance_email || "clearance@vybe.club";
+  const email = event.clearance_email || "clearance@Vybeclub.fun";
   // Fallback image if none provided in DB
   const cover = event.cover_image || "https://images.unsplash.com/photo-1534120247760-c44c3e4a62f1"; 
 
