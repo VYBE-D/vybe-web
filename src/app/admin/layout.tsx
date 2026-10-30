@@ -17,7 +17,7 @@ export default function AdminLayout({
       const { data: auth } = await supabase.auth.getUser();
 
       if (!auth.user) {
-        router.replace("auth/login");
+        router.replace("/auth/login");
         return;
       }
 

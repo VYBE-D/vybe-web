@@ -3,11 +3,13 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/supabase";
 import HomeGrid from "../../../component/HomeGrid";
+import { useSiteFeatures } from "../../../context/SiteFeaturesContext";
 import { Lock, ShieldCheck, Globe, Loader2, Crown } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function HomePage() {
   const router = useRouter();
+  const { features } = useSiteFeatures();
   const [activeTab, setActiveTab] = useState<"public" | "backroom">("public");
   const [publicGirls, setPublicGirls] = useState<any[]>([]);
   const [backroomGirls, setBackroomGirls] = useState<any[]>([]);
@@ -181,12 +183,18 @@ export default function HomePage() {
                 <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.2em] mb-8">
                   This archive requires <br/> <span className="text-red-600">VYBE Authority</span>
                 </p>
-                <button 
-                  onClick={() => router.push('/membership/upgrade')}
-                  className="bg-white text-black text-[9px] font-black uppercase px-10 py-5 rounded-full tracking-[0.3em]"
-                >
-                  Elevate Clearance
-                </button>
+                {features.subscriptions_enabled ? (
+                  <button
+                    onClick={() => router.push('/membership/upgrade')}
+                    className="bg-white text-black text-[9px] font-black uppercase px-10 py-5 rounded-full tracking-[0.3em]"
+                  >
+                    Elevate Clearance
+                  </button>
+                ) : (
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                    New premium memberships are temporarily paused
+                  </p>
+                )}
               </div>
             )}
           </section>
