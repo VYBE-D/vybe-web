@@ -21,4 +21,5 @@ jobs:
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-build-only-not-a-real-key
+          SUPABASE_SERVICE_ROLE_KEY: placeholder-build-only-not-a-real-key
 
