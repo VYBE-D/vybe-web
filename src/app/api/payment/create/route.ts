@@ -1,3 +1,4 @@
+import { readSiteFeatures } from "../../../../lib/site-features-server";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -12,6 +13,15 @@ export async function POST(req: Request) {
       amount,        
       price          
     } = body;
+
+    // Reject membership purchases server-side, even if a visitor calls the API directly.
+    // Existing product purchases and one-time chat/booking payments remain unaffected.
+    if (tierName !== undefined && !(await readSiteFeatures()).features.subscriptions_enabled) {
+      return NextResponse.json(
+        { error: "Membership upgrades are temporarily unavailable." },
+        { status: 503 }
+      );
+    }
 
     const apiKey = process.env.NOWPAYMENTS_API_KEY;
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://your-domain.com";

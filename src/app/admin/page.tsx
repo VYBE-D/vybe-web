@@ -3,20 +3,52 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabase";
+import { useSiteFeatures } from "../../context/SiteFeaturesContext";
+import type { SiteFeatureKey } from "../../lib/features";
 import { 
-  Users, 
   MessageSquare, 
   PlusCircle, 
   ShieldCheck, 
   Calendar,
   ArrowRight,
   LogOut,
-  Loader2,
-  ShoppingBag // 1. Added ShoppingBag icon
+  ShoppingBag,
+  ToggleLeft,
+  AlertCircle // Feature controls
 } from "lucide-react";
 
 export default function AdminDashboard() {
   const router = useRouter();
+  const { features, available, loading: featuresLoading, setFeaturesFromSave } = useSiteFeatures();
+  const [saving, setSaving] = useState<SiteFeatureKey | null>(null);
+  const [featureError, setFeatureError] = useState("");
+
+  const changeFeature = async (key: SiteFeatureKey) => {
+    if (saving || !available) return;
+    setFeatureError("");
+    setSaving(key);
+    try {
+      const { data } = await supabase.auth.getSession();
+      const token = data.session?.access_token;
+      if (!token) throw new Error("Sign in again to manage website settings.");
+      const response = await fetch("/api/site-features", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ key, enabled: !features[key] }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Unable to save changes");
+      setFeaturesFromSave(result.features);
+    } catch (error) {
+      setFeatureError(error instanceof Error ? error.message : "Could not update settings");
+    } finally { setSaving(null); }
+  };
+
+  const featureControls: { key: SiteFeatureKey; title: string; description: string }[] = [
+    { key: "subscriptions_enabled", title: "Subscriptions", description: "Allow new membership upgrades. Existing memberships are preserved." },
+    { key: "profile_tab_enabled", title: "Profile tab", description: "Show the Profile navigation tab and its pages to members. Admin Vault remains available." },
+    { key: "extra_registration_enabled", title: "Extra registration pages", description: "Nickname, interests, consent and photos. Email/password, 18+ confirmation and Host/Me remain required." },
+  ];
   // 2. Added storeCount to state
   const [stats, setStats] = useState({ talentCount: 0, chatCount: 0, eventCount: 0, storeCount: 0 });
   const [loading, setLoading] = useState(true);
@@ -82,12 +114,6 @@ export default function AdminDashboard() {
     }
   ];
 
-  if (loading) return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
-      <Loader2 className="animate-spin text-red-600" size={40} />
-    </div>
-  );
-
   return (
     <main className="min-h-screen bg-black text-white p-6">
       {/* HEADER */}
@@ -102,6 +128,38 @@ export default function AdminDashboard() {
           <LogOut size={20} />
         </button>
       </div>
+
+      <section className="max-w-6xl mx-auto mb-8 rounded-2xl border border-white/10 bg-zinc-900/50 px-5 py-6" aria-label="Site feature switches">
+        <div className="mb-5 flex items-center gap-2">
+          <ToggleLeft size={19} className="text-red-500" />
+          <h2 className="text-base font-black uppercase tracking-widest">Website controls</h2>
+        </div>
+        <p className="mb-5 text-xs text-zinc-400">Turn features off temporarily without deleting their code or existing data.</p>
+        {!featuresLoading && !available && (
+          <p role="status" className="mb-5 flex items-start gap-2 rounded-xl bg-amber-900/20 p-4 text-xs text-amber-200">
+            <AlertCircle size={16} className="shrink-0" /> Settings cannot be saved until Supabase is online and the site settings migration is installed. All switches show their safe OFF fallback.
+          </p>
+        )}
+        {featureError && <p role="alert" className="mb-5 rounded-xl bg-red-900/20 p-4 text-xs text-red-300">{featureError}</p>}
+        <div className="divide-y divide-white/10">
+          {featureControls.map((control) => (
+            <div key={control.key} className="flex items-center justify-between gap-5 py-5">
+              <div>
+                <h3 className="text-sm font-semibold">{control.title}</h3>
+                <p className="mt-1 max-w-xl text-xs leading-relaxed text-zinc-500">{control.description}</p>
+              </div>
+              <button type="button" role="switch" aria-label={control.title}
+                aria-checked={features[control.key]}
+                disabled={!available || featuresLoading || saving !== null}
+                onClick={() => void changeFeature(control.key)}
+                className={`relative h-8 w-14 shrink-0 rounded-full border transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${features[control.key] ? "border-emerald-500 bg-emerald-600" : "border-zinc-700 bg-zinc-800"}`}>
+                <span className={`absolute top-1 h-6 w-6 rounded-full bg-white transition-all ${features[control.key] ? "left-7" : "left-1"}`} />
+              </button>
+            </div>
+          ))}
+        </div>
+        <p className="mt-2 text-[11px] text-zinc-500">OFF = hidden or unavailable. Settings save for everyone when the backend is online. This does not cancel pre-existing recurring payment agreements.</p>
+      </section>
 
       {/* GRID OPTIONS - Changed grid-cols-3 to grid-cols-2 lg:grid-cols-4 to fit the 4th item better */}
       <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -120,7 +178,7 @@ export default function AdminDashboard() {
             
             <div className="flex justify-between items-center">
               <span className="text-3xl font-black text-white/10 group-hover:text-white transition-colors">
-                {item.count}
+                {loading ? "—" : item.count}
               </span>
               <ArrowRight className="text-gray-700 group-hover:text-red-600 group-hover:translate-x-2 transition-all" />
             </div>

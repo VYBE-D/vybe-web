@@ -5,10 +5,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { supabase } from "../lib/supabase";
+import { useSiteFeatures } from "../context/SiteFeaturesContext";
 import { Home, Compass, MessageCircle, ShoppingBag, User, ShieldAlert } from "lucide-react";
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const { features } = useSiteFeatures();
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
@@ -38,11 +40,13 @@ export default function BottomNav() {
   ];
 
   // Add the dynamic final tab
-  const finalTab = isAdmin 
-    ? { href: "/admin", icon: ShieldAlert, label: "Vault" } 
-    : { href: "/profile", icon: User, label: "Profile" };
+  const finalTab = isAdmin
+    ? { href: "/admin", icon: ShieldAlert, label: "Vault" }
+    : features.profile_tab_enabled
+      ? { href: "/profile", icon: User, label: "Profile" }
+      : null;
 
-  const allTabs = [...tabs, finalTab];
+  const allTabs = finalTab ? [...tabs, finalTab] : tabs;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-6">

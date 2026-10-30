@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { supabase } from "../../../lib/supabase";
+import { completeDeferredProfile } from "../../../lib/profile-onboarding";
 import { useRouter } from "next/navigation";
 
 export default function AuthCallback() {
@@ -12,6 +13,7 @@ export default function AuthCallback() {
       const { data } = await supabase.auth.getSession();
 
       if (data.session) {
+        await completeDeferredProfile(data.session.user);
         router.push("/home"); // or /pending
       }
     };

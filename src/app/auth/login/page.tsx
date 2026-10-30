@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion"; // Added to match Signup animation
 import { supabase } from "../../../lib/supabase";
+import { completeDeferredProfile } from "../../../lib/profile-onboarding";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -20,13 +21,13 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
-
+      if (data.user) await completeDeferredProfile(data.user);
       router.replace("/home");
     } catch (err: any) {
       setError(err.message || "Failed to login");

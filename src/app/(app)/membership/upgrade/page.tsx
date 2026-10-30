@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { supabase } from "../../../../lib/supabase"; 
+import { supabase } from "../../../../lib/supabase";
+import { useSiteFeatures } from "../../../../context/SiteFeaturesContext"; 
 import { 
   ChevronLeft, 
   ShieldCheck, 
@@ -72,11 +73,13 @@ const TIERS = [
 
 export default function MembershipPage() {
   const router = useRouter();
+  const { features } = useSiteFeatures();
   const [selectedMainTier, setSelectedMainTier] = useState<any | null>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
   // --- UPDATED: Logic to match unified payment route ---
   const handleFinalPayment = async (optionId: string, displayPrice: string) => {
+    if (!features.subscriptions_enabled) return;
     setLoadingId(optionId);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -113,6 +116,28 @@ export default function MembershipPage() {
       setLoadingId(null);
     }
   };
+
+  if (!features.subscriptions_enabled) {
+    return (
+      <main className="min-h-screen bg-black text-white p-6 flex items-center justify-center">
+        <section className="w-full max-w-md rounded-[2rem] border border-white/10 bg-zinc-900/40 p-8 text-center">
+          <Crown size={32} className="mx-auto mb-5 text-zinc-500" />
+          <h1 className="text-2xl font-black uppercase tracking-tight">Memberships paused</h1>
+          <p className="mt-4 text-sm text-zinc-400">
+            New membership upgrades are temporarily unavailable. Your existing
+            membership has not been deleted.
+          </p>
+          <button
+            type="button"
+            onClick={() => router.push("/home")}
+            className="mt-8 w-full rounded-2xl bg-white px-5 py-4 text-xs font-black uppercase tracking-wider text-black"
+          >
+            Return to home
+          </button>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-black text-white p-6 pb-40 font-sans selection:bg-red-600/30">
