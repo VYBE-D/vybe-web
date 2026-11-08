@@ -40,7 +40,7 @@ export default function PhotoStep({
   };
 
   return (
-    <div className="w-full max-w-md bg-zinc-900 rounded-2xl p-6 text-white">
+    <div className="w-full max-w-md bg-zinc-900 rounded-2xl p-6 text-white vybe-card">
       <h1 className="text-2xl font-bold mb-2">Add your photos</h1>
       <p className="text-gray-400 mb-6">
         Upload at least 2 photos (max 6)

@@ -10,25 +10,20 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.replace("/auth/login");
-    }
+    if (!loading && !user) router.replace("/auth/login");
   }, [user, loading, router]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading...
+    return <div className="vybe-shell vybe-route" aria-busy="true" aria-label="Loading your VYBE experience">
+      <div className="mx-auto max-w-5xl px-5 py-12 animate-pulse">
+        <div className="h-10 w-40 rounded-2xl bg-white/60 mb-10" />
+        <div className="h-44 rounded-3xl bg-white/50 mb-6" />
+        <div className="grid gap-5 grid-cols-2"><div className="h-48 rounded-3xl bg-white/50"/><div className="h-48 rounded-3xl bg-white/50"/></div>
       </div>
-    );
+    </div>;
   }
 
   if (!user) return null;
 
-  return (
-    <div className="min-h-screen pb-16">
-      {children}
-      <BottomNav />
-    </div>
-  );
+  return <div className="vybe-shell vybe-route">{children}<BottomNav /></div>;
 }

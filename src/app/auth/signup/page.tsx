@@ -30,7 +30,7 @@ export default function SignupPage() {
   const go = (next: Step) => { setError(""); setStep(next); };
   const action = (label: string, onClick: () => void, disabled = false) => (
     <button type="button" onClick={onClick} disabled={disabled}
-      className="mt-2 w-full rounded-full border border-white/20 bg-white/10 py-3 font-medium backdrop-blur-md transition hover:bg-white/20 disabled:opacity-40">
+      className="mt-2 w-full rounded-2xl border border-white/50 bg-[#303135] text-white py-4 font-bold shadow-[6px_6px_12px_#b9bbc1,-4px_-4px_12px_#fff] transition hover:bg-[#414247] disabled:opacity-40">
       {label}
     </button>
   );
@@ -89,19 +89,19 @@ export default function SignupPage() {
     } finally { setLoading(false); }
   };
 
-  if (featureLoading) return <main className="min-h-screen bg-black" />;
+  if (featureLoading) return <main className="vybe-auth" aria-busy="true"><div className="vybe-auth__card animate-pulse"><div className="h-8 bg-white/50 rounded-xl w-2/3 mb-6"/><div className="h-12 bg-white/50 rounded-xl"/></div></main>;
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-black px-4">
+    <main className="vybe-auth">
       <motion.div key={step} initial={{ opacity: 0, y: 25 }} animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md rounded-3xl border border-white/20 bg-white/10 p-6 text-white backdrop-blur-xl">
-        {error && <p role="alert" className="mb-4 rounded-xl border border-red-500/30 bg-red-900/30 p-3 text-sm text-red-200">{error}</p>}
+        className="vybe-auth__card">
+        {error && <p role="alert" className="mb-4 rounded-xl border border-[#b94142]/30 bg-[#b94142]/10 p-3 text-sm text-[#933436]">{error}</p>}
 
         {step === "email" && <>
           <h1 className="mb-2 text-2xl font-bold">Welcome to VYBE</h1>
-          <p className="mb-6 text-sm text-gray-300">Enter your email to get started.</p>
+          <p className="mb-6 text-sm text-[#666870]">Enter your email to get started.</p>
           <input type="email" autoComplete="email" aria-label="Email address" placeholder="Email address"
-            className="mb-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 outline-none" value={form.email}
+            className="mb-2 w-full rounded-xl border border-[#c7c8cd] bg-[#e4e5e8] p-3 text-[#232427] outline-none" value={form.email}
             onChange={event => setForm({ ...form, email: event.target.value })} />
           {action("Continue", () => { if (form.email.includes("@")) go("password"); else setError("Enter a valid email address."); })}
         </>}
@@ -109,7 +109,7 @@ export default function SignupPage() {
         {step === "password" && <>
           <h1 className="mb-4 text-2xl font-bold">Secure your account</h1>
           <input type="password" autoComplete="new-password" aria-label="Password" placeholder="Password (at least 6 characters)"
-            className="mb-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 outline-none"
+            className="mb-2 w-full rounded-xl border border-[#c7c8cd] bg-[#e4e5e8] p-3 text-[#232427] outline-none"
             value={form.password} onChange={event => setForm({ ...form, password: event.target.value })} />
           {action("Continue", () => form.password.length >= 6 ? go("age") : setError("Password must be at least 6 characters."))}
         </>}
@@ -138,7 +138,7 @@ export default function SignupPage() {
 
         {showExtraPages && step === "consent" && <>
           <h1 className="mb-4 text-xl font-bold">Consent &amp; respect</h1>
-          <p className="mb-3 text-sm text-zinc-400">Respect consent and boundaries at all times.</p>
+          <p className="mb-3 text-sm text-[#666870]">Respect consent and boundaries at all times.</p>
           {action("I agree", () => go("subIntent"))}
         </>}
 
@@ -147,7 +147,7 @@ export default function SignupPage() {
           <div className="mb-4 grid max-h-48 grid-cols-2 gap-2 overflow-y-auto">
             {SUB_INTENTS.map(item => <button key={item} type="button"
               onClick={() => setSubIntents(previous => previous.includes(item) ? previous.filter(value => value !== item) : [...previous, item])}
-              className={`rounded-lg border p-2 text-xs ${subIntents.includes(item) ? "bg-white text-black" : "border-white/10"}`}>{item}</button>)}
+              className={`rounded-lg border p-2 text-xs ${subIntents.includes(item) ? "bg-[#303135] text-white" : "border-[#c7c8cd]"}`}>{item}</button>)}
           </div>
           {action("Continue", () => go("photos"))}
         </>}
@@ -156,14 +156,14 @@ export default function SignupPage() {
 
         {step === "hosting" && <>
           <h1 className="mb-2 text-2xl font-bold">Where would you like to meet?</h1>
-          <p className="mb-5 text-sm text-zinc-400">Choose whether you can host or prefer someone else to host you.</p>
+          <p className="mb-5 text-sm text-[#666870]">Choose whether you can host or prefer someone else to host you.</p>
           {action(loading ? "Creating account…" : "I can host", () => void register("host"), loading)}
           {action(loading ? "Creating account…" : "Host me", () => void register("travel"), loading)}
         </>}
 
         {step === "verify" && <>
           <h1 className="mb-3 text-2xl font-bold">Check your email</h1>
-          <p className="mb-5 text-sm leading-relaxed text-zinc-300">We sent a confirmation link to your email. Confirm your address, then sign in. Your hosting choice was saved with your signup.</p>
+          <p className="mb-5 text-sm leading-relaxed text-[#666870]">We sent a confirmation link to your email. Confirm your address, then sign in. Your hosting choice was saved with your signup.</p>
           {action("Go to sign in", () => router.replace("/auth/login"))}
         </>}
       </motion.div>

@@ -19,7 +19,7 @@ export default function Requests() {
   return (
     <div className="space-y-3">
       {requests.map(r => (
-        <div key={r.id} className="bg-gray-900 p-4 rounded-xl flex justify-between">
+        <div key={r.id} className="bg-gray-900 p-4 rounded-xl flex justify-between vybe-card">
           <span>Status: {r.status}</span>
           <div className="flex gap-2">
             <button onClick={() => updateStatus(r.id, "accepted")} className="text-green-400">Accept</button>

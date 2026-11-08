@@ -115,38 +115,38 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <main className="min-h-screen bg-black text-white p-6">
+    <main className="vybe-admin min-h-screen p-6 md:p-10">
       {/* HEADER */}
       <div className="max-w-6xl mx-auto flex justify-between items-start mb-12">
         <div>
-          <div className="flex items-center gap-2 text-red-600 mb-2 font-black uppercase text-[10px] tracking-widest">
+          <div className="flex items-center gap-2 text-[#b94142] mb-2 font-black uppercase text-[10px] tracking-widest">
             <ShieldCheck size={16} /> Admin Command
           </div>
-          <h1 className="text-4xl font-black italic uppercase tracking-tighter">Command Center</h1>
+          <h1 className="text-5xl font-black uppercase tracking-tighter text-[#34353a]">Command Center</h1>
         </div>
-        <button onClick={() => { supabase.auth.signOut(); router.push('/home'); }} className="p-3 bg-zinc-900 rounded-xl hover:bg-red-600 transition">
+        <button onClick={() => { supabase.auth.signOut(); router.push('/home'); }} className="p-4 rounded-2xl bg-[#e4e5e8] shadow-[7px_7px_15px_#bcc0c7,-7px_-7px_15px_#fff] hover:text-[#b94142] transition">
           <LogOut size={20} />
         </button>
       </div>
 
-      <section className="max-w-6xl mx-auto mb-8 rounded-2xl border border-white/10 bg-zinc-900/50 px-5 py-6" aria-label="Site feature switches">
+      <section className="max-w-6xl mx-auto mb-8 rounded-3xl border border-white/70 bg-[#e4e5e8] shadow-[9px_9px_22px_#bfc1c8,-9px_-9px_22px_#fff] px-5 py-7" aria-label="Site feature switches">
         <div className="mb-5 flex items-center gap-2">
-          <ToggleLeft size={19} className="text-red-500" />
+          <ToggleLeft size={19} className="text-[#b94142]" />
           <h2 className="text-base font-black uppercase tracking-widest">Website controls</h2>
         </div>
-        <p className="mb-5 text-xs text-zinc-400">Turn features off temporarily without deleting their code or existing data.</p>
+        <p className="mb-5 text-xs text-[#666870]">Turn features off temporarily without deleting their code or existing data.</p>
         {!featuresLoading && !available && (
-          <p role="status" className="mb-5 flex items-start gap-2 rounded-xl bg-amber-900/20 p-4 text-xs text-amber-200">
+          <p role="status" className="mb-5 flex items-start gap-2 rounded-xl bg-amber-600/10 p-4 text-xs text-amber-800">
             <AlertCircle size={16} className="shrink-0" /> Settings cannot be saved until Supabase is online and the site settings migration is installed. All switches show their safe OFF fallback.
           </p>
         )}
-        {featureError && <p role="alert" className="mb-5 rounded-xl bg-red-900/20 p-4 text-xs text-red-300">{featureError}</p>}
-        <div className="divide-y divide-white/10">
+        {featureError && <p role="alert" className="mb-5 rounded-xl bg-red-600/10 p-4 text-xs text-red-800">{featureError}</p>}
+        <div className="divide-y divide-[#c7c8cd]">
           {featureControls.map((control) => (
             <div key={control.key} className="flex items-center justify-between gap-5 py-5">
               <div>
                 <h3 className="text-sm font-semibold">{control.title}</h3>
-                <p className="mt-1 max-w-xl text-xs leading-relaxed text-zinc-500">{control.description}</p>
+                <p className="mt-1 max-w-xl text-xs leading-relaxed text-[#666870]">{control.description}</p>
               </div>
               <button type="button" role="switch" aria-label={control.title}
                 aria-checked={features[control.key]}
@@ -158,7 +158,7 @@ export default function AdminDashboard() {
             </div>
           ))}
         </div>
-        <p className="mt-2 text-[11px] text-zinc-500">OFF = hidden or unavailable. Settings save for everyone when the backend is online. This does not cancel pre-existing recurring payment agreements.</p>
+        <p className="mt-2 text-[11px] text-[#666870]">OFF = hidden or unavailable. Settings save for everyone when the backend is online. This does not cancel pre-existing recurring payment agreements.</p>
       </section>
 
       {/* GRID OPTIONS - Changed grid-cols-3 to grid-cols-2 lg:grid-cols-4 to fit the 4th item better */}
@@ -167,20 +167,20 @@ export default function AdminDashboard() {
           <div 
             key={item.title}
             onClick={() => router.push(item.href)}
-            className="group bg-zinc-900/50 border border-white/5 p-8 rounded-[2.5rem] cursor-pointer hover:border-red-600 transition-all duration-300"
+            className="group bg-[#e4e5e8] border border-white/70 shadow-[9px_9px_22px_#bfc1c8,-9px_-9px_22px_#fff] p-8 rounded-[2rem] cursor-pointer hover:-translate-y-1 transition-all duration-300"
           >
             <div className={`w-12 h-12 ${item.color} rounded-2xl flex items-center justify-center mb-6`}>
               <item.icon size={24} className="text-white" />
             </div>
             
             <h2 className="text-2xl font-black italic uppercase mb-1">{item.title}</h2>
-            <p className="text-xs text-gray-500 mb-6">{item.desc}</p>
+            <p className="text-xs text-[#666870] mb-6">{item.desc}</p>
             
             <div className="flex justify-between items-center">
-              <span className="text-3xl font-black text-white/10 group-hover:text-white transition-colors">
+              <span className="text-3xl font-black text-[#686a71] group-hover:text-[#232427] transition-colors">
                 {loading ? "—" : item.count}
               </span>
-              <ArrowRight className="text-gray-700 group-hover:text-red-600 group-hover:translate-x-2 transition-all" />
+              <ArrowRight className="text-[#686a71] group-hover:text-[#b94142] group-hover:translate-x-2 transition-all" />
             </div>
           </div>
         ))}

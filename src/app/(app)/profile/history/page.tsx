@@ -56,11 +56,11 @@ export default function HookupHistoryPage() {
 
       {/* STATS ROW */}
       <div className="grid grid-cols-2 gap-4 mb-10">
-        <div className="bg-white/5 border border-white/5 p-4 rounded-2xl">
+        <div className="bg-white/5 border border-white/5 p-4 rounded-2xl vybe-card">
           <p className="text-[8px] font-black uppercase tracking-widest text-zinc-500 mb-1">Total Links</p>
           <p className="text-2xl font-black italic">{connections.length}</p>
         </div>
-        <div className="bg-white/5 border border-white/5 p-4 rounded-2xl">
+        <div className="bg-white/5 border border-white/5 p-4 rounded-2xl vybe-card">
           <p className="text-[8px] font-black uppercase tracking-widest text-zinc-500 mb-1">Active Status</p>
           <p className="text-2xl font-black italic text-red-600 uppercase">Verified</p>
         </div>

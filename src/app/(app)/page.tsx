@@ -15,7 +15,7 @@ export default function HomePage() {
   function handleAction(id: string): void {
     console.log(`Navigating to profile or checkout for: ${id}`);
     // Redirect to the discovery page where the full payment logic lives
-    router.push("/discovery"); 
+    router.push("/home"); 
   }
 
   return (
@@ -29,7 +29,7 @@ export default function HomePage() {
       {/* Optional: Add a button to go to discovery if the grid is empty */}
       <div className="flex justify-center mt-10">
          <button 
-           onClick={() => router.push('/discovery')}
+           onClick={() => router.push('/home')}
            className="text-[10px] font-black uppercase tracking-[0.4em] text-red-600 border border-red-600/20 px-6 py-3 rounded-full hover:bg-red-600 hover:text-white transition-all"
          >
            Enter Archives

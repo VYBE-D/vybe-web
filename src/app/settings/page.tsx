@@ -89,8 +89,8 @@ export default function SettingsPage() {
   const dangerGlassClass = "flex items-center justify-between w-full border border-red-500/30 bg-red-600/20 backdrop-blur-md p-4 rounded-2xl mt-2 hover:bg-red-600/30 transition-all text-left text-white font-medium disabled:opacity-50";
 
   return (
-    <main className="min-h-screen bg-black flex justify-center p-4">
-      <div className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 space-y-8 shadow-2xl text-white self-start mt-10">
+    <main className="vybe-route min-h-screen bg-black flex justify-center p-4">
+      <div className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 space-y-8 shadow-2xl text-white self-start mt-10 vybe-card">
 
         <div className="flex items-center justify-between px-1">
           <h1 className="text-2xl font-bold tracking-tight italic uppercase">Settings</h1>

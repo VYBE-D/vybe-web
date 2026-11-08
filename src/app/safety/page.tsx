@@ -36,7 +36,7 @@ export default function SafetyTipsPage() {
   const router = useRouter();
 
   return (
-    <main className="min-h-screen bg-[#050505] text-white p-6 pb-24 font-sans">
+    <main className="vybe-route min-h-screen bg-[#050505] text-white p-6 pb-24 font-sans">
       
       <div className="max-w-2xl mx-auto">
         {/* HEADER */}
@@ -73,7 +73,7 @@ export default function SafetyTipsPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="bg-white/5 border border-white/5 p-5 rounded-2xl flex gap-4 hover:border-red-600/30 transition-colors"
+              className="bg-white/5 border border-white/5 p-5 rounded-2xl flex gap-4 hover:border-red-600/30 transition-colors vybe-card"
             >
               <div className="shrink-0">{item.icon}</div>
               <div>

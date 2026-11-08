@@ -92,13 +92,13 @@ export default function AdminStore() {
       
       {/* BUCKET WARNING */}
       {bucketError && (
-        <div className="max-w-5xl mx-auto mb-6 bg-red-600/20 border border-red-600 p-4 rounded-2xl flex items-center gap-3 text-red-500 font-bold text-xs uppercase tracking-widest">
+        <div className="max-w-5xl mx-auto mb-6 bg-red-600/20 border border-red-600 p-4 rounded-2xl flex items-center gap-3 text-red-500 font-bold text-xs uppercase tracking-widest vybe-card">
           <AlertTriangle size={20} />
           Error: Bucket 'store-inventory' not found. Please create it in Supabase Storage.
         </div>
       )}
 
-      <div className="max-w-5xl mx-auto flex justify-between items-center mb-10 bg-zinc-900/50 p-6 rounded-[2rem] border border-white/10">
+      <div className="max-w-5xl mx-auto flex justify-between items-center mb-10 bg-zinc-900/50 p-6 rounded-[2rem] border border-white/10 vybe-card">
         <h1 className="text-xl font-black italic uppercase tracking-tighter flex items-center gap-2">
           <ShoppingBag className="text-red-600" /> Store Manager
         </h1>
@@ -109,8 +109,8 @@ export default function AdminStore() {
 
       <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10">
         {/* FORM */}
-        <form onSubmit={handleUpload} className="bg-zinc-900 border border-white/5 p-8 rounded-[3rem] space-y-6 h-fit">
-          <div className="flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-[2rem] p-6 hover:border-red-600 transition relative">
+        <form onSubmit={handleUpload} className="bg-zinc-900 border border-white/5 p-8 rounded-[3rem] space-y-6 h-fit vybe-card">
+          <div className="flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-[2rem] p-6 hover:border-red-600 transition relative vybe-card">
             {preview ? (
               <img src={preview} className="w-full h-32 object-contain rounded-xl" />
             ) : (
@@ -132,7 +132,7 @@ export default function AdminStore() {
           <h2 className="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-4">Live Inventory</h2>
           <div className="grid grid-cols-1 gap-3">
             {products.map(item => (
-              <div key={item.id} className="flex items-center justify-between bg-zinc-900/50 border border-white/5 p-4 rounded-3xl">
+              <div key={item.id} className="flex items-center justify-between bg-zinc-900/50 border border-white/5 p-4 rounded-3xl vybe-card">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-black rounded-lg overflow-hidden">
                      <img src={item.image_url} className="w-full h-full object-cover" />
