@@ -84,7 +84,7 @@ function ReportForm() {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       
       {error && (
-        <div className="bg-red-600/10 border border-red-600/50 p-4 rounded-2xl flex items-center gap-3">
+        <div className="bg-red-600/10 border border-red-600/50 p-4 rounded-2xl flex items-center gap-3 vybe-card">
           <AlertTriangle size={18} className="text-red-600 shrink-0" />
           <p className="text-[11px] text-red-500 font-bold uppercase tracking-tight">{error}</p>
         </div>

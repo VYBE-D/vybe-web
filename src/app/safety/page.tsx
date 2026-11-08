@@ -73,7 +73,7 @@ export default function SafetyTipsPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="bg-white/5 border border-white/5 p-5 rounded-2xl flex gap-4 hover:border-red-600/30 transition-colors"
+              className="bg-white/5 border border-white/5 p-5 rounded-2xl flex gap-4 hover:border-red-600/30 transition-colors vybe-card"
             >
               <div className="shrink-0">{item.icon}</div>
               <div>

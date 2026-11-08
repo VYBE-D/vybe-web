@@ -33,7 +33,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           {/* TABLE OF CONTENTS */}
-          <section className="bg-white/5 border border-white/10 p-6 rounded-3xl">
+          <section className="bg-white/5 border border-white/10 p-6 rounded-3xl vybe-card">
             <h3 className="text-white font-bold uppercase tracking-widest text-[10px] mb-4">Core Privacy Pillars</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[11px] font-bold uppercase tracking-tighter text-zinc-500">
               <div className="flex items-center gap-2"><Fingerprint size={14} className="text-red-600"/> Data Collection</div>
@@ -74,7 +74,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           {/* 3. ENCRYPTION & SECURITY */}
-          <section className="space-y-4 bg-zinc-900/50 p-8 rounded-3xl border border-white/5">
+          <section className="space-y-4 bg-zinc-900/50 p-8 rounded-3xl border border-white/5 vybe-card">
             <div className="flex items-center gap-2 mb-2">
               <Lock size={18} className="text-red-600" />
               <h3 className="text-white font-black uppercase italic tracking-widest text-sm">Encryption Standards</h3>
@@ -82,7 +82,7 @@ export default function PrivacyPolicyPage() {
             <p>
               All communications on Vybe are encrypted in transit. We utilize industry-standard TLS (Transport Layer Security) to prevent interception. Our databases are partitioned so that personal identifiers are separated from behavioral data.
             </p>
-            <div className="bg-red-950/20 border border-red-900/50 p-4 rounded-xl">
+            <div className="bg-red-950/20 border border-red-900/50 p-4 rounded-xl vybe-card">
                <p className="text-red-500 font-black uppercase text-[10px] tracking-widest leading-tight italic text-center">
                 SHADOW ADMINS DO NOT HAVE ACCESS TO YOUR RAW PASSWORDS. 
               </p>

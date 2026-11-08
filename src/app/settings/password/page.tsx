@@ -25,7 +25,7 @@ export default function PasswordSettings() {
 
   return (
     <main className="vybe-route min-h-screen bg-black flex justify-center p-4">
-      <div className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 text-white self-start">
+      <div className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 text-white self-start vybe-card">
         <button onClick={() => router.back()} className="text-sm text-gray-400 mb-4">← Back</button>
         <h1 className="text-xl font-bold mb-6">Change Password</h1>
         <form onSubmit={handleUpdate} className="space-y-4">
