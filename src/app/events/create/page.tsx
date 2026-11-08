@@ -35,7 +35,7 @@ export default function EventCreate() {
   };
 
   return (
-    <main className="bg-black min-h-screen text-white p-6">
+    <main className="vybe-route bg-black min-h-screen text-white p-6">
       <h1 className="text-3xl font-bold mb-6">Create Event</h1>
       <div className="flex flex-col gap-4 max-w-md">
         <input

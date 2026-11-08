@@ -59,7 +59,7 @@ export default function EventReveal() {
   if (loading) return <div className="text-white p-6">Loading events...</div>;
 
   return (
-    <main className="bg-black min-h-screen text-white p-6">
+    <main className="vybe-route bg-black min-h-screen text-white p-6">
       <h1 className="text-3xl font-bold mb-6">Private Events</h1>
       <p className="text-gray-400 mb-6">You don’t browse people. You unlock moments.</p>
       

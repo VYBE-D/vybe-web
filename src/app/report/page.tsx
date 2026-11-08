@@ -161,7 +161,7 @@ export default function ReportPage() {
   const router = useRouter();
 
   return (
-    <main className="min-h-screen bg-[#050505] text-white p-6 pb-20 font-sans">
+    <main className="vybe-route min-h-screen bg-[#050505] text-white p-6 pb-20 font-sans">
       <div className="max-w-md mx-auto">
         <header className="flex items-center justify-between mb-10">
           <button onClick={() => router.back()} className="p-2 bg-white/5 rounded-full border border-white/10 hover:bg-white/10 transition-colors">

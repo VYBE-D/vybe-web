@@ -14,7 +14,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   }, [user, loading, router]);
 
   if (loading) {
-    return <div className="vybe-shell" aria-busy="true" aria-label="Loading your VYBE experience">
+    return <div className="vybe-shell vybe-route" aria-busy="true" aria-label="Loading your VYBE experience">
       <div className="mx-auto max-w-5xl px-5 py-12 animate-pulse">
         <div className="h-10 w-40 rounded-2xl bg-white/60 mb-10" />
         <div className="h-44 rounded-3xl bg-white/50 mb-6" />
@@ -25,5 +25,5 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   if (!user) return null;
 
-  return <div className="vybe-shell">{children}<BottomNav /></div>;
+  return <div className="vybe-shell vybe-route">{children}<BottomNav /></div>;
 }

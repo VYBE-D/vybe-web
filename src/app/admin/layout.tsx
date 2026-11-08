@@ -40,11 +40,15 @@ export default function AdminLayout({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        Checking admin access…
+      <div className="vybe-route min-h-screen flex items-center justify-center" aria-busy="true">
+        <div className="w-full max-w-md p-8 space-y-5 animate-pulse">
+          <div className="h-10 w-48 rounded-2xl bg-white/70" />
+          <div className="h-40 rounded-3xl bg-white/70" />
+          <span className="sr-only">Checking admin access</span>
+        </div>
       </div>
     );
   }
 
-  return <>{children}</>;
+  return <div className="vybe-route vybe-admin-shell">{children}</div>;
 }

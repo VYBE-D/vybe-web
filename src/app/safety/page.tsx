@@ -36,7 +36,7 @@ export default function SafetyTipsPage() {
   const router = useRouter();
 
   return (
-    <main className="min-h-screen bg-[#050505] text-white p-6 pb-24 font-sans">
+    <main className="vybe-route min-h-screen bg-[#050505] text-white p-6 pb-24 font-sans">
       
       <div className="max-w-2xl mx-auto">
         {/* HEADER */}
