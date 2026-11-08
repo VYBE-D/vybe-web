@@ -1,168 +1,145 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { Shield, Flame, Sparkles, Zap, EyeOff, Lock, Ghost, ArrowRight, ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { ArrowUpRight, Compass, HeartHandshake, CalendarDays, ShieldCheck, LockKeyhole, MessageCircle, Sparkles, UserRound, ArrowRight } from "lucide-react";
+
+const features = [
+  { icon: Compass, title: "Discover your people", text: "Find a community that makes room for real connection, shared interests, and individual expression." },
+  { icon: CalendarDays, title: "Make moments happen", text: "Explore events, meetups, and experiences brought together in one place." },
+  { icon: MessageCircle, title: "Connect on your terms", text: "Start conversations, build trust, and decide what you want to share." },
+  { icon: ShieldCheck, title: "Respect comes first", text: "A space built around consent, boundaries, discretion, and personal choice." },
+  { icon: HeartHandshake, title: "More than a feed", text: "Community, discovery, and experiences beyond the usual endless scrolling." },
+  { icon: LockKeyhole, title: "Your space, your pace", text: "Choose how you participate. Explore the community when you’re ready." },
+];
 
 export default function LandingPage() {
-  const router = useRouter();
-
   return (
-    <main className="min-h-screen bg-[#050505] text-white selection:bg-red-500/30 overflow-x-hidden">
-      
-      {/* 🔮 Grainy Noise Overlay & Glows */}
-      <div className="fixed inset-0 pointer-events-none z-50 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[800px] h-[800px] bg-red-900/10 rounded-full blur-[180px] animate-pulse" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-zinc-900/20 rounded-full blur-[150px]" />
+    <main className="vybe-landing">
+      <div className="container">
+        <nav className="nav" aria-label="Main navigation">
+          <Link className="wordmark" href="/" aria-label="VYBE homepage">VYBE<span>.</span></Link>
+          <div className="nav-links">
+            <a className="nav-extra" href="#discover">Discover</a>
+            <a className="nav-extra" href="#experience">Experience</a>
+            <a className="nav-extra" href="#questions">Questions</a>
+            <Link href="/auth/login" className="nav-extra">Sign in</Link>
+            <Link href="/auth/signup" className="cta dark">Enter VYBE <ArrowUpRight size={16} /></Link>
+          </div>
+        </nav>
+
+        <section className="hero" id="top">
+          <div>
+            <span className="eyebrow">Your world · Your people · Your pace</span>
+            <h1 className="display engraved">FEEL<br />THE <em>VYBE.</em></h1>
+            <p>A space for genuine connection, community and experiences. Meet like-minded people, explore what matters to you and make the moments your own.</p>
+            <div className="hero-actions">
+              <Link href="/auth/signup" className="cta dark">Explore VYBE <ArrowRight size={19}/></Link>
+              <a href="#discover" className="cta light">How it works <ArrowUpRight size={17}/></a>
+            </div>
+            <div className="hero-note"><i aria-hidden="true" /> Curiosity welcome. Respect required.</div>
+          </div>
+
+          <div className="console" aria-label="Illustration of VYBE's community experience">
+            <div className="console-head"><span>VYBE / CONNECTION CONSOLE</span><b aria-hidden="true" /></div>
+            <div className="console-screen">
+              <div className="small">Now entering</div>
+              <strong>YOUR KIND<br />OF COMMUNITY.</strong>
+              <span>Discover more. Connect naturally.</span>
+            </div>
+            <div className="console-keys">
+              <div className="console-key"><Compass aria-hidden="true"/><span>Explore</span></div>
+              <div className="console-key"><MessageCircle aria-hidden="true"/><span>Connect</span></div>
+              <div className="console-key"><CalendarDays aria-hidden="true"/><span>Events</span></div>
+              <div className="console-key"><HeartHandshake aria-hidden="true"/><span>Community</span></div>
+              <div className="console-key"><LockKeyhole aria-hidden="true"/><span>Boundaries</span></div>
+              <div className="console-key"><Sparkles aria-hidden="true"/><span>Express</span></div>
+            </div>
+          </div>
+        </section>
       </div>
 
-      {/* 1️⃣ NAVIGATION */}
-      <nav className="relative z-[60] flex items-center justify-between px-6 py-10 max-w-7xl mx-auto">
-        <div className="group cursor-pointer">
-          <div className="text-3xl font-black tracking-tighter italic uppercase leading-none">
-            Vybe<span className="text-red-600">.</span>
+      <section className="section" id="discover">
+        <div className="container">
+          <div className="eyebrow">01 / Discover VYBE</div>
+          <h2 className="display section-title engraved">MADE FOR<br />REAL CONNECTION.</h2>
+          <p className="section-lead">A fresh take on finding your circle. Everything has a purpose, from discovering new people to exploring events and starting conversations.</p>
+          <div className="feature-grid">
+            {features.map(({icon: Icon,title,text},i)=>(
+              <article className="feature raised" key={title}>
+                <div className="icon-frame"><Icon size={27} strokeWidth={1.6} aria-hidden="true"/></div>
+                <div><div className="eyebrow">0{i+1} / VYBE</div><h3>{title}</h3><p>{text}</p></div>
+              </article>
+            ))}
           </div>
-          <div className="h-[1px] w-0 group-hover:w-full bg-red-600 transition-all duration-500" />
-        </div>
-        
-        <div className="flex items-center gap-8">
-          <button 
-            onClick={() => router.push("/auth/login")} 
-            className="hidden md:block text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 hover:text-white transition"
-          >
-            Access Vault
-          </button>
-          <button 
-            onClick={() => router.push("/auth/signup")}
-            className="group relative bg-white text-black px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:scale-105 active:scale-95"
-          >
-            Join Society
-          </button>
-        </div>
-      </nav>
-
-      {/* 2️⃣ HERO SECTION */}
-      <section className="relative z-10 px-6 pt-20 pb-32 max-w-7xl mx-auto">
-        <div className="flex flex-col items-center text-center">
-            <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-zinc-900/50 border border-white/5 mb-10 backdrop-blur-md">
-                <div className="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping" />
-                <span className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-400">System Status: Encrypted & Private</span>
-            </div>
-
-            <h1 className="text-[12vw] md:text-[9vw] font-black leading-[0.85] tracking-tighter uppercase italic mb-12">
-                Chase Your <br />
-                <span className="relative inline-block text-transparent bg-clip-text bg-gradient-to-b from-white via-zinc-400 to-zinc-800">
-                    Fantasies.
-                </span>
-            </h1>
-
-            <div className="max-w-2xl mb-16 relative">
-                <p className="text-zinc-400 text-lg md:text-xl leading-relaxed font-medium italic">
-                    "A beautifully diverse space for the scene—not spectators. 
-                    Built for <span className="text-white underline decoration-red-600 underline-offset-8">those who practice</span>, not those who just watch."
-                </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-center gap-4 w-full max-w-xl">
-                <button 
-                    onClick={() => router.push("/auth/signup")}
-                    className="w-full group bg-red-600 hover:bg-red-700 py-6 rounded-2xl flex items-center justify-center gap-3 transition-all duration-300 shadow-[0_0_40px_rgba(220,38,38,0.2)]"
-                >
-                    <span className="font-black text-lg uppercase italic tracking-wider">Start Exploring</span>
-                    <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                </button>
-                <button 
-                    onClick={() => router.push("/auth/login")}
-                    className="w-full bg-zinc-900/50 border border-white/5 py-6 rounded-2xl font-black text-lg uppercase italic tracking-wider hover:bg-zinc-800 transition-all"
-                >
-                    Login
-                </button>
-            </div>
         </div>
       </section>
 
-      {/* 3️⃣ THE CORE PROTOCOL (Bento Grid Redesign) */}
-      <section className="relative z-10 px-6 max-w-7xl mx-auto pb-40">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 h-full">
-            
-            {/* Main Card */}
-            <div className="md:col-span-8 p-10 rounded-[2.5rem] bg-zinc-900/30 border border-white/5 backdrop-blur-xl flex flex-col justify-between group hover:border-red-600/20 transition-all">
-                <div>
-                    <div className="bg-red-600/10 w-12 h-12 rounded-2xl flex items-center justify-center mb-8">
-                        <Shield className="text-red-500" size={24} />
-                    </div>
-                    <h3 className="text-4xl font-black uppercase italic tracking-tighter mb-4">Privacy is our <br/> Only Religion</h3>
-                    <p className="text-zinc-500 max-w-md font-medium leading-relaxed">
-                        We don’t sell data. We don’t track habits. Your fantasies belong to you and stay on your device. Zero collection, zero compromise.
-                    </p>
-                </div>
-                <div className="mt-12 flex items-center gap-2 text-zinc-500 group-hover:text-white transition-colors">
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em]">Read the Protocol</span>
-                    <ChevronRight size={14} />
-                </div>
+      <section className="section journey" id="experience">
+        <div className="container journey-grid">
+          <div className="journey-stage pressed">
+            <div className="profile-stack">
+              <div className="eyebrow" style={{marginBottom:8}}>EXPERIENCE / 001</div>
+              <div className="mini-row"><div className="dot"><UserRound size={19}/></div><div><strong>Find your circle</strong><small>Explore people with shared interests</small></div></div>
+              <div className="mini-row"><div className="dot"><MessageCircle size={19}/></div><div><strong>Start a conversation</strong><small>Connect at your own pace</small></div></div>
+              <div className="mini-row"><div className="dot"><CalendarDays size={19}/></div><div><strong>Discover experiences</strong><small>Find what’s happening around you</small></div></div>
+              <div className="mini-row"><div className="dot"><ShieldCheck size={19}/></div><div><strong>Keep your boundaries</strong><small>Respect and choice come first</small></div></div>
             </div>
-
-            {/* Small Side Card 1 */}
-            <div className="md:col-span-4 p-10 rounded-[2.5rem] bg-zinc-900/30 border border-white/5 backdrop-blur-xl flex flex-col justify-between group hover:border-orange-600/20 transition-all">
-                <Flame className="text-orange-500 mb-8" size={32} />
-                <div>
-                    <h3 className="text-xl font-black uppercase italic tracking-tighter mb-2">Not Dating</h3>
-                    <p className="text-zinc-500 text-sm font-medium">No small talk. Find playmates, masters, and subs instantly.</p>
-                </div>
+          </div>
+          <div>
+            <span className="eyebrow">02 / How it works</span>
+            <h2 className="display section-title engraved">YOUR WORLD.<br />YOUR RULES.</h2>
+            <p className="section-lead">VYBE brings discovery and conversation together, with space to move at a pace that feels right for you.</p>
+            <div className="steps">
+              <div className="step"><b>01</b><div><h3>Make your entrance</h3><p>Set up your account and choose how you want to show up.</p></div></div>
+              <div className="step"><b>02</b><div><h3>Follow your interests</h3><p>Explore the people, experiences and communities that resonate.</p></div></div>
+              <div className="step"><b>03</b><div><h3>Let connection happen</h3><p>Start a conversation or find an experience worth showing up for.</p></div></div>
             </div>
-
-            {/* Small Side Card 2 */}
-            <div className="md:col-span-4 p-10 rounded-[2.5rem] bg-white text-black flex flex-col justify-between group hover:scale-[1.02] transition-all">
-                <Ghost size={32} />
-                <div>
-                    <h3 className="text-xl font-black uppercase italic tracking-tighter mb-2">Underground</h3>
-                    <p className="text-zinc-800/60 text-sm font-bold">Workshops, private mixers, and secret parties near you.</p>
-                </div>
-            </div>
-
-            {/* Wide Bottom Card */}
-            <div className="md:col-span-8 p-10 rounded-[2.5rem] bg-zinc-900/30 border border-white/5 backdrop-blur-xl flex flex-col md:flex-row gap-8 items-center justify-between group hover:border-yellow-400/20 transition-all">
-                <div className="max-w-xs text-center md:text-left">
-                    <h3 className="text-2xl font-black uppercase italic tracking-tighter mb-2">The Real You</h3>
-                    <p className="text-zinc-500 text-sm font-medium">Express your kinks without judgment in a community that speaks your language.</p>
-                </div>
-                <Zap size={60} className="text-yellow-400 opacity-20 group-hover:opacity-100 transition-opacity" />
-            </div>
-
+            <Link href="/auth/signup" className="cta dark" style={{marginTop:32}}>Get started <ArrowRight size={17}/></Link>
+          </div>
         </div>
       </section>
 
-      {/* 4️⃣ CALL TO ACTION */}
-      <section className="relative z-10 py-32 overflow-hidden">
-        <div className="absolute inset-0 bg-red-600 opacity-[0.03] animate-pulse" />
-        <div className="max-w-4xl mx-auto text-center px-6 relative">
-            <h2 className="text-6xl md:text-8xl font-black mb-8 italic uppercase tracking-tightest leading-[0.8]">
-                Own Your <br/> Desires<span className="text-red-600">.</span>
-            </h2>
-            <p className="text-zinc-500 max-w-lg mx-auto mb-12 text-sm md:text-lg font-medium leading-relaxed italic">
-                Beyond polite society. Built in the shadows. <br/>Your sexual journey begins the moment you enter.
-            </p>
-            <button 
-                onClick={() => router.push("/auth/signup")}
-                className="group px-16 py-6 bg-white text-black rounded-full font-black uppercase tracking-[0.3em] hover:bg-zinc-200 transition-all shadow-[0_0_50px_rgba(255,255,255,0.1)] flex items-center justify-center gap-4 mx-auto"
-            >
-                Start Registration
-                <ArrowRight size={18} />
-            </button>
+      <section className="statement">
+        <div className="container">
+          <div className="eyebrow">03 / The point of it all</div>
+          <h2 className="display">LESS NOISE.<br />MORE VYBE.</h2>
+          <p>Not another place to perform for an audience. A place to explore who you are, meet people who understand you, and make connections that mean something.</p>
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="py-20 border-t border-white/5 bg-black/50 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-10">
-            <div className="text-xl font-black italic uppercase">Vybe</div>
-            <p className="text-[10px] uppercase tracking-[0.6em] text-zinc-600 text-center">
-                Beyond Polite Society, Built In The Shadow
-            </p>
-            <div className="flex gap-6">
-                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-white cursor-pointer transition">Terms</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-white cursor-pointer transition">Privacy</span>
+      <section className="section" id="questions">
+        <div className="container">
+          <div className="eyebrow">04 / Good to know</div>
+          <h2 className="display section-title engraved">QUESTIONS?<br />WE GET IT.</h2>
+          <p className="section-lead">The essentials, before you enter.</p>
+          <div className="faq-list">
+            <details><summary>What is VYBE?</summary><p>VYBE is a community-focused platform for discovering people, connecting through conversation, and exploring shared experiences and events.</p></details>
+            <details><summary>How do I join?</summary><p>Use the Enter VYBE button to visit the registration flow. Availability may depend on the current site settings.</p></details>
+            <details><summary>Can I browse existing features?</summary><p>Existing member areas include discovery, conversations and events. Access and available features depend on your account and the website’s current configuration.</p></details>
+            <details><summary>What about privacy and safety?</summary><p>Read our privacy policy, terms and safety guidelines before participating. Respect other members’ boundaries and use the available reporting options when needed.</p></details>
+          </div>
+        </div>
+      </section>
+
+      <section className="closing">
+        <div className="container">
+          <span className="eyebrow">A different kind of connection</span>
+          <h2 className="display engraved">FIND YOUR<br />FREQUENCY.</h2>
+          <Link href="/auth/signup" className="cta dark">Enter VYBE <ArrowRight size={18}/></Link>
+          <Link href="/auth/login" className="cta light">Already a member?</Link>
+        </div>
+      </section>
+
+      <footer className="footer">
+        <div className="container">
+          <div className="footer-line">
+            <span className="eyebrow" style={{color:"#bcbec5"}}>Beyond the ordinary</span>
+            <div className="footer-links">
+              <Link href="/terms">Terms</Link><Link href="/privacy">Privacy</Link><Link href="/safety">Safety</Link><Link href="/report">Report</Link><Link href="/auth/login">Sign in</Link>
             </div>
+          </div>
+          <div className="footer-wordmark" aria-label="VYBE">VYBE</div>
+          <div className="footer-line footer-fine"><span>© {new Date().getFullYear()} VYBE</span><span>Find your people. Feel the VYBE.</span></div>
         </div>
       </footer>
     </main>
