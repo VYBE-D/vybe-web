@@ -38,7 +38,7 @@ export default function AdminEventSetup() {
 
   return (
     <div className="min-h-screen bg-black text-white p-6 pb-20 font-mono">
-      <div className="max-w-xl mx-auto border border-white/10 bg-zinc-900/50 p-8 rounded-3xl backdrop-blur-md vybe-card">
+      <div className="max-w-xl mx-auto border border-white/10 bg-zinc-900/50 p-8 rounded-3xl backdrop-blur-md">
         
         <div className="flex items-center gap-3 mb-8">
           <ShieldAlert className="text-red-600" />

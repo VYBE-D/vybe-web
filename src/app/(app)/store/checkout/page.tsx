@@ -65,7 +65,7 @@ export default function CheckoutPage() {
 
   return (
     <main className="min-h-screen bg-black text-white p-6 flex flex-col items-center justify-center">
-      <div className="max-w-md w-full bg-zinc-900/50 border border-white/10 rounded-[3rem] p-10 backdrop-blur-xl vybe-card">
+      <div className="max-w-md w-full bg-zinc-900/50 border border-white/10 rounded-[3rem] p-10 backdrop-blur-xl">
         <h2 className="text-3xl font-black italic uppercase text-center mb-8">Authorize Supply</h2>
         
         <div className="space-y-4 mb-10">

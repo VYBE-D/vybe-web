@@ -1,5 +1,4 @@
 import "./globals.css";
-import "./vybe-routes.css";
 import { ReactNode } from "react";
 import { AuthProvider } from "../context/AuthContext";
 import { SiteFeaturesProvider } from "../context/SiteFeaturesContext";
@@ -7,7 +6,7 @@ import { SiteFeaturesProvider } from "../context/SiteFeaturesContext";
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body>
+      <body className="bg-black text-white">
         <AuthProvider>
           <SiteFeaturesProvider>{children}</SiteFeaturesProvider>
         </AuthProvider>

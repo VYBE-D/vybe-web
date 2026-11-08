@@ -7,7 +7,7 @@ export default function TermsPage() {
   const router = useRouter();
 
   return (
-    <main className="vybe-route min-h-screen bg-[#050505] text-white p-6 pb-24 font-sans">
+    <main className="min-h-screen bg-[#050505] text-white p-6 pb-24 font-sans">
       <div className="max-w-3xl mx-auto">
         
         {/* STICKY HEADER */}
@@ -105,7 +105,7 @@ export default function TermsPage() {
               <p>Some Products and Services require account registration. You agree that all registration information you provide is accurate, current, and complete. Vybe reserves the right to suspend or terminate accounts associated with false or misleading information. All registrations are the property of vybe and are subject to its Privacy Policy.</p>
             </div>
 
-            <div className="space-y-4 bg-white/5 p-8 rounded-3xl vybe-card">
+            <div className="space-y-4 bg-white/5 p-8 rounded-3xl">
               <h3 className="text-white font-black uppercase italic tracking-widest text-lg flex items-center gap-3">
                 <span className="text-red-600 text-2xl">04</span> User Conduct
               </h3>
@@ -145,7 +145,7 @@ export default function TermsPage() {
           </section>
 
           {/* 11-20 LEGAL PROTECTIONS (THE LONG PART) */}
-          <section className="space-y-12 bg-white/5 p-8 rounded-[3rem] border border-white/5 vybe-card">
+          <section className="space-y-12 bg-white/5 p-8 rounded-[3rem] border border-white/5">
             <div className="space-y-4">
                <h3 className="text-red-600 font-black uppercase text-xs">11. Disclaimer of Warranties</h3>
                <p className="text-[11px] uppercase font-bold leading-relaxed">ALL PRODUCTS AND SERVICES ARE PROVIDED “AS IS” WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED, TO THE MAXIMUM EXTENT PERMITTED BY LAW. VYBE DISCLAIMS ALL WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.</p>

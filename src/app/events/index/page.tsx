@@ -59,13 +59,13 @@ export default function EventReveal() {
   if (loading) return <div className="text-white p-6">Loading events...</div>;
 
   return (
-    <main className="vybe-route bg-black min-h-screen text-white p-6">
+    <main className="bg-black min-h-screen text-white p-6">
       <h1 className="text-3xl font-bold mb-6">Private Events</h1>
       <p className="text-gray-400 mb-6">You don’t browse people. You unlock moments.</p>
       
       <div className="grid gap-6 md:grid-cols-2">
         {events.map(event => (
-          <div key={event.id} className="bg-zinc-900 rounded-xl p-4 flex flex-col vybe-card">
+          <div key={event.id} className="bg-zinc-900 rounded-xl p-4 flex flex-col">
             <h2 className="text-xl font-bold">{event.name}</h2>
             <p className="text-gray-400">{event.date ? event.date : "This Weekend"}</p>
             <p className="text-gray-400">Slots remaining: {event.slots}</p>

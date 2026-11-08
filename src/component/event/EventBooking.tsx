@@ -22,7 +22,7 @@ export default function EventBooking() {
   };
 
   return (
-    <div className="p-4 bg-gray-900 rounded-xl space-y-2 vybe-card">
+    <div className="p-4 bg-gray-900 rounded-xl space-y-2">
       <input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} className="input" />
       <input placeholder="Description" value={desc} onChange={(e) => setDesc(e.target.value)} className="input" />
       <input placeholder="Location" value={location} onChange={(e) => setLocation(e.target.value)} className="input" />

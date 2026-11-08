@@ -25,7 +25,7 @@ export default function Users() {
   return (
     <div className="space-y-3">
       {users.map((u) => (
-        <div key={u.id} className="bg-gray-900 p-4 rounded-xl flex justify-between vybe-card">
+        <div key={u.id} className="bg-gray-900 p-4 rounded-xl flex justify-between">
           <div>
             <p className="font-semibold">{u.name}</p>
             <p className="text-xs text-gray-400">{u.email}</p>

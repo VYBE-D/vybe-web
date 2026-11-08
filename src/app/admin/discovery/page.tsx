@@ -95,7 +95,7 @@ export default function PostTalentPage() {
     <main className="min-h-screen bg-black text-white p-6 pb-20">
       
       {/* HEADER */}
-      <div className="max-w-5xl mx-auto flex justify-between items-center mb-10 bg-zinc-900/50 p-6 rounded-[2rem] border border-white/10 vybe-card">
+      <div className="max-w-5xl mx-auto flex justify-between items-center mb-10 bg-zinc-900/50 p-6 rounded-[2rem] border border-white/10">
         <h1 className="text-xl font-black italic uppercase tracking-tighter">Talent Command</h1>
         <div className="flex gap-2">
           <button onClick={() => router.push("/admin/inbox")} className="bg-zinc-800 p-3 rounded-xl hover:bg-red-600 transition"><MessageSquare size={18}/></button>
@@ -108,10 +108,10 @@ export default function PostTalentPage() {
         {/* FORM SECTION */}
         <section>
             <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-red-600 mb-4 ml-4">Deployment Form</h2>
-            <form onSubmit={handleSubmit} className="bg-zinc-900 border border-white/5 p-8 rounded-[3rem] space-y-6 vybe-card">
+            <form onSubmit={handleSubmit} className="bg-zinc-900 border border-white/5 p-8 rounded-[3rem] space-y-6">
             
             {/* BACKROOM TOGGLE SWITCH */}
-            <div className="flex items-center justify-between bg-black/40 p-4 rounded-2xl border border-white/5 vybe-card">
+            <div className="flex items-center justify-between bg-black/40 p-4 rounded-2xl border border-white/5">
                 <div className="flex items-center gap-3">
                     {isBackroom ? <Lock className="text-red-600" size={18}/> : <Globe className="text-zinc-500" size={18}/>}
                     <div>
@@ -189,7 +189,7 @@ export default function PostTalentPage() {
             <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 mb-4 ml-4">Active Personnel ({talents.length})</h2>
             <div className="space-y-4 max-h-[700px] overflow-y-auto pr-2">
                 {talents.map((girl) => (
-                    <div key={girl.id} className="bg-zinc-900/50 border border-white/5 p-4 rounded-3xl flex items-center justify-between group vybe-card">
+                    <div key={girl.id} className="bg-zinc-900/50 border border-white/5 p-4 rounded-3xl flex items-center justify-between group">
                         <div className="flex items-center gap-4">
                             <div className="relative">
                                 <img src={girl.image_url} className="w-12 h-12 rounded-xl object-cover border border-white/10" />

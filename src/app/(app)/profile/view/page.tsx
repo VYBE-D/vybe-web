@@ -86,7 +86,7 @@ export default function IdentityVault() {
       <div className="px-8 flex-1 flex flex-col justify-start pt-12 space-y-4 relative z-10">
         
         <div className="flex gap-4">
-            <div className="flex-1 bg-zinc-900/40 border border-white/5 p-6 rounded-[2rem] backdrop-blur-xl vybe-card">
+            <div className="flex-1 bg-zinc-900/40 border border-white/5 p-6 rounded-[2rem] backdrop-blur-xl">
                 <div className="flex items-center gap-2 mb-2 text-zinc-500">
                     <Activity size={14} />
                     <span className="text-[9px] font-black uppercase tracking-[0.2em]">Signal</span>
@@ -94,7 +94,7 @@ export default function IdentityVault() {
                 <p className="text-sm font-bold text-green-500 uppercase tracking-widest">Active</p>
             </div>
             
-            <div className="flex-1 bg-zinc-900/40 border border-white/5 p-6 rounded-[2rem] backdrop-blur-xl vybe-card">
+            <div className="flex-1 bg-zinc-900/40 border border-white/5 p-6 rounded-[2rem] backdrop-blur-xl">
                 <div className="flex items-center gap-2 mb-2 text-zinc-500">
                     <Lock size={14} />
                     <span className="text-[9px] font-black uppercase tracking-[0.2em]">Auth</span>

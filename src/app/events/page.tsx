@@ -25,7 +25,7 @@ export default function EventsPage() {
   }, []);
 
   return (
-    <div className="vybe-route min-h-screen bg-black text-white p-6">
+    <div className="min-h-screen bg-black text-white p-6">
       <h1 className="text-3xl font-bold mb-4">Private Events</h1>
       {events.map(ev => (
         <div key={ev.id} className="bg-zinc-900 rounded-lg p-4 mb-4">

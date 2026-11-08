@@ -26,7 +26,7 @@ export default function Chat() {
     <div className="space-y-3">
       <div className="max-h-96 overflow-y-auto space-y-2">
         {messages.map(m => (
-          <div key={m.id} className="bg-gray-800 p-2 rounded-xl vybe-card">
+          <div key={m.id} className="bg-gray-800 p-2 rounded-xl">
             <p className="text-xs text-gray-400">{m.sender}</p>
             <p>{m.message}</p>
           </div>

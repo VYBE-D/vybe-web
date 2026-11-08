@@ -162,7 +162,7 @@ export default function HomeGrid({ girls }: { girls: any[] }) {
                     </div>
                 </div>
 
-                <div className="bg-zinc-900/30 p-8 rounded-[2.5rem] border border-white/5 vybe-card">
+                <div className="bg-zinc-900/30 p-8 rounded-[2.5rem] border border-white/5">
                    <p className="text-zinc-500 text-[9px] font-black uppercase tracking-[0.3em] mb-3 flex items-center gap-2">
                      <Sparkles size={12} /> The Vibe
                    </p>

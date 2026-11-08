@@ -120,7 +120,7 @@ export default function MembershipPage() {
   if (!features.subscriptions_enabled) {
     return (
       <main className="min-h-screen bg-black text-white p-6 flex items-center justify-center">
-        <section className="w-full max-w-md rounded-[2rem] border border-white/10 bg-zinc-900/40 p-8 text-center vybe-card">
+        <section className="w-full max-w-md rounded-[2rem] border border-white/10 bg-zinc-900/40 p-8 text-center">
           <Crown size={32} className="mx-auto mb-5 text-zinc-500" />
           <h1 className="text-2xl font-black uppercase tracking-tight">Memberships paused</h1>
           <p className="mt-4 text-sm text-zinc-400">
