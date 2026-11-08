@@ -13,10 +13,10 @@ const rooms = [
 
 export default function EventDetailsPage() {
   return (
-    <main className="pb-20">
+    <main className="pb-24 max-w-5xl mx-auto">
       {/* Header */}
-      <div className="h-56 bg-gray-900 flex items-end p-4">
-        <h1 className="text-xl font-bold">Night Vibes Party</h1>
+      <div className="h-56 bg-[#d5d7de] rounded-[2rem] flex items-end p-6 vybe-card">
+        <h1 className="text-4xl font-black uppercase tracking-tight">Night Vibes Party</h1>
       </div>
 
       {/* Girls */}

@@ -61,7 +61,7 @@ export default function HomePage() {
       } catch (err) {
         console.error("Fetch Error:", err);
       } finally {
-        setTimeout(() => setLoading(false), 1800); 
+        setLoading(false); 
       }
     }
     fetchData();
@@ -136,7 +136,7 @@ export default function HomePage() {
       </header>
 
       <div className="flex justify-center mb-8">
-        <div className="bg-zinc-900/80 p-1 rounded-2xl flex gap-1 border border-white/5 w-full max-w-[320px]">
+        <div className="bg-zinc-900/80 p-1 rounded-2xl flex gap-1 border border-white/5 w-full max-w-[320px] vybe-card">
           <button 
             onClick={() => setActiveTab("public")}
             className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
@@ -175,7 +175,7 @@ export default function HomePage() {
               )
             ) : (
               /* ACCESS DENIED VIEW */
-              <div className="mt-4 flex flex-col items-center justify-center text-center p-10 border border-white/5 bg-zinc-900/20 rounded-[3.5rem] backdrop-blur-sm">
+              <div className="mt-4 flex flex-col items-center justify-center text-center p-10 border border-white/5 bg-zinc-900/20 rounded-[3.5rem] backdrop-blur-sm vybe-card">
                 <div className="w-16 h-16 rounded-full bg-zinc-900 border border-red-600/30 flex items-center justify-center mb-6">
                   <Lock size={24} className="text-red-600" />
                 </div>

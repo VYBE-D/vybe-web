@@ -88,7 +88,7 @@ export default function UserStore() {
             Supply Drop
           </h1>
           
-          <div className="bg-white/[0.03] border border-white/10 p-1.5 rounded-2xl flex gap-1 backdrop-blur-3xl shadow-2xl">
+          <div className="bg-white/[0.03] border border-white/10 p-1.5 rounded-2xl flex gap-1 backdrop-blur-3xl shadow-2xl vybe-card">
             <button 
               onClick={() => setActiveTab("supply")}
               className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${
@@ -136,7 +136,7 @@ export default function UserStore() {
                           <Plus size={12} /> Request
                         </button>
                       ) : (
-                        <div className="flex items-center justify-between bg-white text-black rounded-xl p-1">
+                        <div className="flex items-center justify-between bg-white text-black rounded-xl p-1 vybe-card">
                           <button 
                             onClick={() => updateQuantity(item, -1)}
                             className="w-8 h-8 flex items-center justify-center hover:bg-black/10 rounded-lg transition-colors"
@@ -167,7 +167,7 @@ export default function UserStore() {
             >
               {inventory.length > 0 ? (
                 inventory.map((item, idx) => (
-                  <div key={`${item.id}-${idx}`} className="bg-white/[0.03] border border-white/10 rounded-[2.5rem] p-5 flex flex-col items-center text-center">
+                  <div key={`${item.id}-${idx}`} className="bg-white/[0.03] border border-white/10 rounded-[2.5rem] p-5 flex flex-col items-center text-center vybe-card">
                     <div className="w-24 h-24 mb-4 relative">
                       <img src={item.product?.image_url} className="w-full h-full object-cover rounded-2xl grayscale opacity-50" />
                       <div className="absolute -top-2 -right-2 bg-black border border-white/20 p-1.5 rounded-full">

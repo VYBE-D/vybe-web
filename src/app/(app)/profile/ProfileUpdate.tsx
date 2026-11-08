@@ -51,7 +51,7 @@ export default function ProfileUpdate() {
   if (loading) return <div>Loading...</div>;
 
   return (
-    <div className="p-4 bg-gray-900 rounded-xl space-y-3">
+    <div className="p-4 bg-gray-900 rounded-xl space-y-3 vybe-card">
       <input className="input" placeholder="Nickname" value={nickname} onChange={(e) => setNickname(e.target.value)} />
       <input className="input" placeholder="City" value={city} onChange={(e) => setCity(e.target.value)} />
       <input type="file" multiple onChange={(e) => setPhotos([...photos, ...(e.target.files ? Array.from(e.target.files) : [])])} />

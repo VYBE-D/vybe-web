@@ -143,7 +143,7 @@ export default function EventView() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex items-center justify-center p-6"
           >
-            <div className="w-full max-w-sm bg-zinc-900 border border-white/10 p-8 rounded-[2rem] relative shadow-2xl shadow-black">
+            <div className="w-full max-w-sm bg-zinc-900 border border-white/10 p-8 rounded-[2rem] relative shadow-2xl shadow-black vybe-card">
               
               <button 
                 onClick={() => setShowClearanceModal(false)}
@@ -164,7 +164,7 @@ export default function EventView() {
                   This location is not public. Entry is granted by clearance only.
                 </p>
 
-                <div className="w-full bg-black/40 p-4 rounded-xl border border-white/5">
+                <div className="w-full bg-black/40 p-4 rounded-xl border border-white/5 vybe-card">
                   <p className="text-[10px] text-zinc-500 uppercase tracking-widest mb-3">Protocol</p>
                   <ol className="text-[10px] text-left text-zinc-300 space-y-2 list-decimal list-inside font-mono">
                     <li>Request clearance via secure channel.</li>
