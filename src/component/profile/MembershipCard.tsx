@@ -5,7 +5,7 @@ import { useSiteFeatures } from "../../context/SiteFeaturesContext";
 export default function MembershipCard({ onUpgrade }: { onUpgrade: () => void }) {
   const { features } = useSiteFeatures();
   return (
-    <div className="bg-white/5 border border-white/10 p-6 rounded-3xl">
+    <div className="bg-white/5 border border-white/10 p-6 rounded-3xl vybe-card">
       {features.subscriptions_enabled ? (
         <button onClick={onUpgrade} className="w-full py-3 bg-white text-black font-black italic uppercase rounded-full">
           Upgrade Member

@@ -65,7 +65,7 @@ export default function EventReveal() {
       
       <div className="grid gap-6 md:grid-cols-2">
         {events.map(event => (
-          <div key={event.id} className="bg-zinc-900 rounded-xl p-4 flex flex-col">
+          <div key={event.id} className="bg-zinc-900 rounded-xl p-4 flex flex-col vybe-card">
             <h2 className="text-xl font-bold">{event.name}</h2>
             <p className="text-gray-400">{event.date ? event.date : "This Weekend"}</p>
             <p className="text-gray-400">Slots remaining: {event.slots}</p>
